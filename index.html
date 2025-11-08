@@ -4,13 +4,17 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
     <meta name="theme-color" content="#050A16" />
-    <link rel="manifest" href="/ASV-mE1/manifest.webmanifest" />
+    <!-- manifest liegt in /public, daher ohne Repo-Prefix -->
+    <link rel="manifest" href="/manifest.webmanifest" />
     <title>ASV Süchteln mE1 · Live</title>
     <link rel="preconnect" href="https://srs-handball.de">
     <link rel="dns-prefetch" href="https://srs-handball.de">
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/ASV-mE1/src/main.tsx"></script>
+    <!-- WICHTIG: Vite-Entry immer /src/main.tsx -->
+    <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
+
+
