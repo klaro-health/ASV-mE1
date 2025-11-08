@@ -1,0 +1,12 @@
+{
+  "coaches": [
+    { "name": "Max Mustermann", "role": "Trainer", "mail": "trainer@asv.example", "phone": "0151 1234567" },
+    { "name": "Erika Beispiel", "role": "Co-Trainerin" }
+  ],
+  "players": [
+    { "num": 1,  "name": "Leo",   "pos": "Tor",  "hand": "rechts", "year": "2015" },
+    { "num": 4,  "name": "Mika",  "pos": "Feld", "hand": "links",  "year": "2016" },
+    { "num": 7,  "name": "Noah",  "pos": "Feld", "hand": "rechts", "year": "2015" },
+    { "num": 10, "name": "Yuna",  "pos": "Feld", "hand": "links",  "year": "2016" }
+  ]
+}
