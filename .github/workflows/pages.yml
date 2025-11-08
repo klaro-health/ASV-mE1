@@ -21,13 +21,10 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: 'npm'
+          node-version: 20          # kein cache!
       - run: npm install --no-audit --no-fund
       - run: npm run build
-      # Pages vorbereiten (Pflicht vor Upload/Deploy)
       - uses: actions/configure-pages@v5
-      # Build-Ordner als Artefakt hochladen
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
@@ -37,7 +34,6 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: github-pages
-      # zeigt in der Actions-UI die veröffentlichte URL an
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
