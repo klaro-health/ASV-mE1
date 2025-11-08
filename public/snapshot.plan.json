@@ -1,0 +1,6 @@
+{
+  "rows": [
+    { "SpieldatumTag": "2025.11.16", "SpieldatumUhrzeit": "11:30", "Halle_Kuerzel": "ASV-Halle", "Spielnummer": "12345", "HeimTeam_Name_kurz": "ASV Süchteln mE1", "GastTeam_Name_kurz": "TV Lobberich", "Tore_Heim": 23, "Tore_Gast": 19 },
+    { "SpieldatumTag": "2025.11.23", "SpieldatumUhrzeit": "10:00", "Halle_Kuerzel": "Lank 1",    "Spielnummer": "12346", "HeimTeam_Name_kurz": "TD Lank", "GastTeam_Name_kurz": "ASV Süchteln mE1" }
+  ]
+}
