@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 type NuTabType = 'table'|'plan'
+
 const tryMirrors = async (cfg:any, type:NuTabType) => {
   if (!cfg) throw new Error('cfg missing')
   const encoded = encodeURIComponent(cfg.groupUrl)
-  for (const base of cfg.mirrors as string[]) {
+  for (const base of (cfg.mirrors as string[])) {
     try {
       const url = `${base}?url=${encoded}&type=${type}`
       const r = await fetch(url, { cache: 'no-store', mode: 'cors' })
@@ -23,7 +24,7 @@ export function useNuTab(cfg:any){
   const [stamp,setStamp]=useState<string>('lädt …')
 
   useEffect(()=>{ if(!cfg) return
-    const cacheKey=cfg.cacheKey
+    const cacheKey=cfg.cacheKey || 'asv_me1_cache'
     const readCache=(k:string)=>{ try{ const o=JSON.parse(localStorage.getItem(cacheKey)||'{}'); return o[k]||null }catch{return null} }
     const writeCache=(k:string,v:any)=>{ try{ const o=JSON.parse(localStorage.getItem(cacheKey)||'{}'); o[k]=v; localStorage.setItem(cacheKey,JSON.stringify(o)) }catch{} }
 
@@ -34,8 +35,7 @@ export function useNuTab(cfg:any){
         setTable(t); setPlan(p); setOk(true); writeCache('table',t); writeCache('plan',p)
       }catch{
         const t=readCache('table'); const p=readCache('plan')
-        if (t||p){ setTable(t); setPlan(p); setOk(false) }
-        else { setOk(false) }
+        if (t||p){ setTable(t); setPlan(p); setOk(false) } else { setOk(false) }
       }
     }
     load()
