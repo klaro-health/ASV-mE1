@@ -1,0 +1,11 @@
+{
+  "name": "ASV Süchteln mE1",
+  "short_name": "ASV mE1",
+  "display": "standalone",
+  "background_color": "#050A16",
+  "theme_color": "#050A16",
+  "icons": [
+    { "src": "/ASV-mE1/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/ASV-mE1/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
