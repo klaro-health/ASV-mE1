@@ -1,10 +1,12 @@
+// src/hooks/useNuTab.ts
 import { useEffect, useState } from 'react'
+
 type NuTabType = 'table'|'plan'
 
 const tryMirrors = async (cfg:any, type:NuTabType) => {
   if (!cfg) throw new Error('cfg missing')
   const encoded = encodeURIComponent(cfg.groupUrl)
-  for (const base of (cfg.mirrors as string[])) {
+  for (const base of (cfg.mirrors || []) as string[]) {
     try {
       const url = `${base}?url=${encoded}&type=${type}`
       const r = await fetch(url, { cache: 'no-store', mode: 'cors' })
@@ -14,6 +16,15 @@ const tryMirrors = async (cfg:any, type:NuTabType) => {
     } catch {}
   }
   throw new Error('mirrors down')
+}
+
+const readSnap = async (name:string) => {
+  try {
+    const url = `${import.meta.env.BASE_URL}${name}`
+    const r = await fetch(url, { cache: 'no-store' })
+    if (!r.ok) return null
+    return await r.json()
+  } catch { return null }
 }
 
 export function useNuTab(cfg:any){
@@ -33,8 +44,11 @@ export function useNuTab(cfg:any){
         const [t,p] = await Promise.all([tryMirrors(cfg,'table'), tryMirrors(cfg,'plan')])
         setTable(t); setPlan(p); setOk(true); writeCache('table',t); writeCache('plan',p)
       }catch{
-        const t=readCache('table'); const p=readCache('plan')
-        if (t||p){ setTable(t); setPlan(p); setOk(false) } else { setOk(false) }
+        const t0=readCache('table'); const p0=readCache('plan')
+        if (t0||p0){ setTable(t0); setPlan(p0); setOk(false); return }
+        const [ts, ps] = await Promise.all([readSnap('snapshot.table.json'), readSnap('snapshot.plan.json')])
+        if (ts || ps){ setTable(ts); setPlan(ps); setOk(false); return }
+        setOk(false)
       }
     }
     load()
