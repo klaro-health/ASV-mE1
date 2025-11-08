@@ -1,6 +1,3 @@
-// scripts/scrape-nuliga.mjs
-// Holt die nuLiga-Gruppenseite aus public/config.json und schreibt Snapshots ins public/-Verzeichnis.
-
 import fs from 'fs/promises';
 
 const CONFIG_PATH = 'public/config.json';
@@ -8,21 +5,10 @@ const OUT_TABLE = 'public/snapshot.table.json';
 const OUT_PLAN  = 'public/snapshot.plan.json';
 const UA = 'Mozilla/5.0 (compatible; ASV-mE1-scraper/1.0)';
 
-// --- Utils ---
-const clean = s => String(s)
-  .replace(/<br\s*\/?>/gi,' ')
-  .replace(/<[^>]+>/g,' ')
-  .replace(/\s+/g,' ')
-  .replace(/&nbsp;/g,' ')
-  .trim();
-const num = x => { const n = parseInt(String(x).replace(/[^\d\-]/g,''),10); return isNaN(n) ? 0 : n; };
-const normalizeDate = x => {
-  if (/^\d{2}\.\d{2}\.\d{4}$/.test(x)) { const [d,m,y]=x.split('.'); return `${y}.${m}.${d}`; }
-  if (/^\d{4}\.\d{2}\.\d{2}$/.test(x)) return x;
-  return x;
-};
+const clean = s => String(s).replace(/<br\s*\/?>/gi,' ').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').replace(/&nbsp;/g,' ').trim();
+const num = x => { const n = parseInt(String(x).replace(/[^\d\-]/g,''),10); return isNaN(n)?0:n; };
+const normalizeDate = x => (/^\d{2}\.\d{2}\.\d{4}$/.test(x) ? x.replace(/(\d{2})\.(\d{2})\.(\d{4})/,'$3.$2.$1') : (/^\d{4}\.\d{2}\.\d{2}$/.test(x) ? x : x));
 
-// --- Parser: Tabelle ---
 function parseTable(html){
   const tables = html.match(/<table[^>]*>([\s\S]*?)<\/table>/gi) || [];
   let best = [];
@@ -46,8 +32,7 @@ function parseTable(html){
       o.PlusTore = gf || 0; o.MinusTore = ga || 0;
       const diffC = cols.find(x=>/^[+\-]?\d+$/.test(x)); if (diffC!=null) o.DiffTore = num(diffC);
       const ptsC  = cols.slice().reverse().find(x=>/^\d+\s*:\s*\d+$/.test(x) || /^\d+$/.test(x)) || '';
-      if (ptsC.includes(':')) { const [pp,mp]=ptsC.split(':').map(num); o.PlusPunkte=pp; o.MinusPunkte=mp; }
-      else { o.points = num(ptsC); }
+      if (ptsC.includes(':')) { const [pp,mp]=ptsC.split(':').map(num); o.PlusPunkte=pp; o.MinusPunkte=mp; } else { o.points = num(ptsC); }
       if (o.Platz && o.Team_Kurzname) out.push(o);
     }
     if (out.length > best.length) best = out;
@@ -55,7 +40,6 @@ function parseTable(html){
   return { rows: best };
 }
 
-// --- Parser: Spielplan ---
 function parsePlan(html){
   const tables = html.match(/<table[^>]*>([\s\S]*?)<\/table>/gi) || [];
   let best = [];
@@ -72,10 +56,8 @@ function parsePlan(html){
       const hall = cols.find(x=>/(Halle|Süchteln|Lank|Lobberich|Kaarst|Möncheng)/i.test(x)) || '';
       const nr   = cols.find(x=>/^\d{4,}$/.test(x)) || '';
       const vs   = cols.find(x=>/–|-/.test(x) && x.split(/–|-/).length===2) || '';
-      let home='', away='';
-      if (vs){ [home,away] = vs.split(/–|-/).map(s=>s.trim()); }
+      let home='', away=''; if (vs){ [home,away] = vs.split(/–|-/).map(s=>s.trim()); }
       const score = cols.find(x=>/^\d+\s*:\s*\d+$/.test(x)) || '';
-
       if (date) obj.SpieldatumTag = normalizeDate(date);
       if (time) obj.SpieldatumUhrzeit = time;
       if (hall) obj.Halle_Kuerzel = hall;
@@ -90,7 +72,6 @@ function parsePlan(html){
   return { rows: best };
 }
 
-// --- Main ---
 const cfg = JSON.parse(await fs.readFile(CONFIG_PATH, 'utf8'));
 const groupUrl = cfg.groupUrl;
 if (!groupUrl) { console.error('groupUrl fehlt in public/config.json'); process.exit(1); }
