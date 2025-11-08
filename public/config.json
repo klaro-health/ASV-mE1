@@ -1,0 +1,10 @@
+{
+  "club": "ASV Süchteln",
+  "groupUrl": "https://hnr-handball.liga.nu/cgi-bin/WebObjects/nuLigaHBDE.woa/wa/groupPage?championship=KG+25%2F26&group=424318",
+  "teamPortrait": "https://hnr-handball.liga.nu/cgi-bin/WebObjects/nuLigaHBDE.woa/wa/teamPortrait?teamtable=2099701&pageState=vorrunde&championship=KG+25%2F26&group=424318",
+  "mirrors": [
+    "https://srs-handball.de/nutab/fetch_table",
+    "https://nutab.srs-tools.de/nutab/fetch_table"
+  ],
+  "cacheKey": "asv_me1_cache_v4"
+}
