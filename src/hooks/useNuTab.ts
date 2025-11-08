@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-
 type NuTabType = 'table'|'plan'
 
 const tryMirrors = async (cfg:any, type:NuTabType) => {
