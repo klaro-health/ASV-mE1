@@ -1,258 +1,485 @@
+
 <!doctype html>
 <html lang="de">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>ASV Süchteln mE1 · Live</title>
+<title>ASV Süchteln · mE1 Live · Regionsoberliga</title>
 <meta name="theme-color" content="#050A16" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <link rel="manifest" href='data:application/manifest+json,{"name":"ASV Süchteln mE1","short_name":"ASV mE1","display":"standalone","background_color":"#050A16","theme_color":"#050A16"}'>
 
-<!-- Preconnects -->
-<link rel="preconnect" href="https://srs-handball.de" />
-<link rel="dns-prefetch" href="https://srs-handball.de" />
-<link rel="preconnect" href="https://hnr-handball.liga.nu" />
-<link rel="dns-prefetch" href="https://hnr-handball.liga.nu" />
-
-<!-- nuTab (lädt echte nuLiga-Daten CORS-frei) -->
+<!-- nuTab Loader (zieht echte Live-Daten via Server-Proxy, CORS-frei) -->
+<link rel="preconnect" href="https://srs-handball.de">
+<link rel="dns-prefetch" href="https://srs-handball.de">
 <link rel="stylesheet" href="https://srs-handball.de/nutab/tabellen.css">
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://srs-handball.de/nutab/tabellen.js"></script>
 
-<!-- iOS Icon (weiß + blaue Outline) -->
-<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 512 512%22><rect rx=%2284%22 width=%22512%22 height=%22512%22 fill=%22white%22/><g transform=%22translate(256,256)%22><polygon points=%220,-200 170,0 0,200 -170,0%22 fill=%22none%22 stroke=%22%230046AD%22 stroke-width=%2226%22/><text x=%220%22 y=%22-36%22 font-family=%22Arial Black%22 font-size=%2298%22 text-anchor=%22middle%22 fill=%22%230046AD%22>ASV</text><rect x=%22-160%22 y=%22-6%22 width=%22320%22 height=%2250%22 fill=%22white%22 stroke=%22%230046AD%22 stroke-width=%2210%22/><text x=%220%22 y=%2228%22 font-family=%22Arial Black%22 font-size=%2246%22 text-anchor=%22middle%22 fill=%22%230046AD%22>SÜCHTELN</text></g></svg>" />
+<!-- Performance Hints -->
+<link rel="preconnect" href="https://nutab.srs-tools.de">
+<link rel="dns-prefetch" href="https://nutab.srs-tools.de">
+<link rel="preconnect" href="https://hnr-handball.liga.nu">
+<link rel="dns-prefetch" href="https://hnr-handball.liga.nu">
+
+<!-- Homescreen-Icon (weiß + blaue Outline, vektorbasiert) -->
+<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 512 512%22><rect rx=%2284%22 width=%22512%22 height=%22512%22 fill=%22white%22/><g transform=%22translate(256,256)%22><polygon points=%220,-200 170,0 0,200 -170,0%22 fill=%22none%22 stroke=%22%230046AD%22 stroke-width=%2224%22/><text x=%220%22 y=%22-36%22 font-family=%22Arial Black%22 font-size=%2298%22 text-anchor=%22middle%22 fill=%22%230046AD%22>ASV</text><rect x=%22-160%22 y=%22-6%22 width=%22320%22 height=%2250%22 fill=%22white%22 stroke=%22%230046AD%22 stroke-width=%2210%22/><text x=%220%22 y=%2228%22 font-family=%22Arial Black%22 font-size=%2246%22 text-anchor=%22middle%22 fill=%22%230046AD%22>S%C3%9ACHTELN</text></g></svg>'/>
 
 <style>
+/* ======= Critical CSS (High-End, system fonts, iPhone-ready) ======= */
 *{box-sizing:border-box} html,body{height:100%} body{margin:0}
-:root{--bg:#050A16;--panel:#0A1531;--panel2:#0a1226;--line:rgba(255,255,255,.12);--ink:#EAF2FF;--mut:#9AB0D0;--asv:#0046AD;--red:#E21B23;--ok:#23d18b;--bad:#ff6b6b;--r:18px;--sh:0 12px 40px rgba(0,0,0,.35)}
-[data-theme="light"]{--bg:#FAFBFF;--panel:#fff;--panel2:#f4f7ff;--line:rgba(4,22,55,.12);--ink:#031634;--mut:#5d6f8c}
-body{color:var(--ink);font:16px/1.55 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;background:
-  radial-gradient(1200px 700px at -10% 0%, rgba(10,102,255,.20), transparent 60%),
-  radial-gradient(1200px 700px at 110% -10%, rgba(226,27,35,.18), transparent 60%),var(--bg)}
+:root{
+  --bg:#050A16; --panel:#0A1531; --panel2:#0a1226; --line:rgba(255,255,255,.12);
+  --ink:#EAF2FF; --mut:#9AB0D0; --asv:#0046AD; --red:#E21B23; --ok:#23d18b; --warn:#ffd166; --bad:#ff6b6b;
+  --r:18px; --sh:0 12px 40px rgba(0,0,0,.35);
+}
+[data-theme="light"]{ --bg:#FAFBFF; --panel:#ffffff; --panel2:#f4f7ff; --line:rgba(4,22,55,.12); --ink:#031634; --mut:#5d6f8c }
+
+body{
+  color:var(--ink);
+  font:16px/1.55 ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+  background:
+    radial-gradient(1200px 700px at -10% 0%, rgba(10,102,255,.20), transparent 60%),
+    radial-gradient(1200px 700px at 110% -10%, rgba(226,27,35,.18), transparent 60%),
+    var(--bg);
+}
+
+/* Layout & Header */
 .c{max-width:1180px;margin:auto;padding:0 clamp(14px,3vw,22px)}
 header{position:sticky;top:0;z-index:50;background:linear-gradient(180deg,rgba(5,10,22,.92),rgba(5,10,22,.65));border-bottom:1px solid var(--line);backdrop-filter:saturate(140%) blur(10px)}
 [data-theme="light"] header{background:linear-gradient(180deg,rgba(250,251,255,.92),rgba(250,251,255,.65))}
 .nav{height:64px;display:flex;align-items:center;justify-content:space-between;gap:10px}
 .brand{display:flex;align-items:center;gap:.7rem;font-weight:900}
-.mark{width:34px;height:34px;border-radius:12px;background:conic-gradient(from 120deg,var(--red),var(--asv))}
+.logo{width:36px;height:36px;border-radius:12px;background:conic-gradient(from 120deg,var(--red),var(--asv))}
 .controls{display:flex;gap:.5rem;flex-wrap:wrap}
-.btn{display:inline-flex;align-items:center;gap:.5rem;padding:.65rem .9rem;border-radius:14px;border:1px solid var(--line);background:transparent;color:inherit;text-decoration:none;font-weight:800}
+.btn{display:inline-flex;align-items:center;gap:.5rem;padding:.65rem .95rem;border-radius:14px;border:1px solid var(--line);background:transparent;color:inherit;text-decoration:none;font-weight:800}
 .btn.primary{background:linear-gradient(90deg,var(--red),var(--asv));color:#fff;border:0}
+.btn:active{transform:translateY(1px)}
+.toggle{cursor:pointer}
+
+/* Cards & grid */
 .grid{display:grid;gap:clamp(14px,1.6vw,18px)}
 .card{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--sh);overflow:hidden}
 .pad{padding:clamp(14px,2vw,20px)}
 .hero{display:grid;grid-template-columns:1.6fr .95fr;gap:clamp(14px,1.6vw,18px);margin:16px 0}
 @media (max-width:980px){.hero{grid-template-columns:1fr}}
-h1{margin:.1rem 0 .4rem;font-size:clamp(26px,4.2vw,38px)} h3{margin:0 0 .2rem}
+
+/* Headlines & badges */
+h1{margin:.1rem 0 .4rem;font-size:clamp(26px,4.2vw,38px)}
+h3{margin:0 0 .2rem}
 .badges{display:flex;gap:.5rem;flex-wrap:wrap}
 .badge{display:inline-flex;align-items:center;gap:.4rem;background:rgba(255,255,255,.06);border:1px solid var(--line);padding:.35rem .6rem;border-radius:999px;font-size:.9rem}
 [data-theme="light"] .badge{background:#f3f6ff}
-.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem;margin-top:.8rem}
-.kpi{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:14px;padding:.8rem;text-align:center}
-.kpi .lbl{color:var(--mut);font-size:.85rem}.kpi .val{font-size:1.45rem;font-weight:900}
-.table{overflow:auto} table{width:100%;border-collapse:collapse;font-size:.96rem}
+
+/* KPI tiles + countdown + form curve */
+.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:.8rem;margin-top:.8rem}
+.kpi{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:14px;padding:.75rem;text-align:center}
+.kpi .lbl{color:var(--mut);font-size:.85rem}
+.kpi .val{font-size:1.45rem;font-weight:900}
+.spark{height:36px;display:flex;gap:6px;align-items:flex-end;justify-content:center}
+.spark span{width:22px;border-radius:6px;background:var(--line)}
+.spark .W{background:var(--ok);height:100%}
+.spark .U{background:var(--warn);height:66%}
+.spark .N{background:var(--bad);height:40%}
+
+/* Tables */
+.table{overflow:auto}
+table{width:100%;border-collapse:collapse;font-size:.96rem}
 thead th{position:sticky;top:0;background:var(--panel)}
 th,td{padding:.6rem .75rem;border-bottom:1px solid var(--line);text-align:center}
-td.team{text-align:left} tr:nth-child(even){background:rgba(255,255,255,.03)}
-tr.me{background:linear-gradient(90deg,rgba(0,115,255,.20),transparent 60%)} tr.top3{background:linear-gradient(90deg,rgba(255,255,255,.08),transparent 60%)}
-.diff.pos{color:var(--ok);font-weight:800}.diff.neg{color:var(--bad);font-weight:800}
+td.team{text-align:left}
+tr:nth-child(even){background:rgba(255,255,255,.03)}
+tr.me{background:linear-gradient(90deg,rgba(0,115,255,.20),transparent 60%)}
+tr.top3{background:linear-gradient(90deg,rgba(255,255,255,.08),transparent 60%)}
+.diff.pos{color:var(--ok);font-weight:800}
+.diff.neg{color:var(--bad);font-weight:800}
+
+/* Skeleton */
 .skel{display:inline-block;height:12px;min-width:160px;border-radius:6px;background:linear-gradient(90deg,#0d1421,#16213a,#0d1421);background-size:200% 100%;animation:sh 1.2s infinite}
 @keyframes sh{0%{background-position:200% 0}100%{background-position:-200% 0}}
+[data-theme="light"] .skel{background:linear-gradient(90deg,#e8eefc,#f6f8ff,#e8eefc)}
+
+/* Band & sponsor pills */
 .band{display:flex;gap:18px;overflow:auto;padding:10px;scroll-snap-type:x mandatory}
 .pill{flex:0 0 auto;scroll-snap-align:center;border:1px solid var(--line);border-radius:999px;padding:.55rem 1rem;background:rgba(255,255,255,.05)}
+
+/* Team grid (no photos) */
+.teamgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem}
+@media (max-width:820px){.teamgrid{grid-template-columns:repeat(2,1fr)}}
+.player{border:1px solid var(--line);border-radius:14px;padding:.8rem;background:linear-gradient(180deg,var(--panel2),var(--panel))}
+.player .num{font-weight:900;font-size:1.2rem}
+.player .meta{display:flex;gap:.5rem;flex-wrap:wrap}
+
+/* Fallback frames */
 .frame{width:100%;border:0;height:520px;border-radius:14px;background:#0a1426;display:none}
+
+/* Footer */
 footer{border-top:1px solid var(--line);margin-top:18px}
 .copy{color:var(--mut);padding:14px 16px;display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap}
+
+/* helpers */
 .meta{color:var(--mut);font-size:.92rem}
-.profile{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.profile .row{display:flex;justify-content:space-between;border-bottom:1px dashed var(--line);padding:6px 2px}
-@media (max-width:680px){.profile{grid-template-columns:1fr}}
 .hidden{display:none!important}
 </style>
 </head>
 <body>
 <header>
   <div class="nav c">
-    <div class="brand"><div class="mark"></div><div>ASV Süchteln · mE1 · Live</div></div>
+    <div class="brand">
+      <div class="logo" aria-hidden="true"></div>
+      <div>ASV Süchteln · mE1 · Live</div>
+    </div>
     <div class="controls">
-      <button id="btnTheme" class="btn" aria-label="Theme umschalten">☀︎/🌙</button>
+      <button id="btnTheme" class="btn toggle" aria-label="Theme umschalten">☀︎/🌙</button>
       <a id="btnInstall" class="btn hidden">Zum Homescreen</a>
+      <button id="btnShare" class="btn">Teilen</button>
       <button id="btnReload" class="btn">Neu laden</button>
     </div>
   </div>
 </header>
 
 <section class="c hero">
-  <div class="card"><div class="pad">
-    <div class="badges"><span class="badge">Regionsoberliga</span><span class="badge">Krefeld-Grenzland</span><span class="badge">Jahrgang 2015/2016</span></div>
-    <h1>„Vollgas. Fair. <span style="color:#7FB4FF">ASV.</span>“</h1>
-    <div class="meta" style="margin-bottom:.35rem">Nächstes Spiel</div>
-    <div class="card" style="border:1px solid var(--line);background:linear-gradient(180deg,var(--panel2),var(--panel));"><div class="pad">
-      <div id="nextMatch" class="skel"></div>
-      <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.7rem">
-        <a id="lnNuLiga" class="btn" target="_blank" rel="noopener">nuLiga</a>
-        <a id="lnHalle" class="btn" target="_blank" rel="noopener">Navigation</a>
-        <button id="btnJubel" class="btn primary" type="button">🎉 Jubel-Modus</button>
+  <!-- LEFT: Hero + KPIs -->
+  <div class="card">
+    <div class="pad">
+      <div class="badges">
+        <span class="badge">Regionsoberliga</span>
+        <span class="badge">Krefeld-Grenzland</span>
+        <span class="badge">Jahrgang 2015/2016</span>
       </div>
-      <div class="meta" style="margin-top:.5rem">Quelle & Zeit: <span id="liveStamp">lädt …</span></div>
-    </div></div>
-    <div class="kpis">
-      <div class="kpi"><div class="lbl">Platz</div><div id="kPlatz" class="val">—</div></div>
-      <div class="kpi"><div class="lbl">Punkte</div><div id="kPunkte" class="val">—</div></div>
-      <div class="kpi"><div class="lbl">Tordiff.</div><div id="kDiff" class="val">—</div></div>
-      <div class="kpi"><div class="lbl">Form (5)</div><div class="val"><div id="form5" class="band"></div></div></div>
-    </div>
-    <div id="selfcheck" class="meta" style="margin-top:.6rem">Self-Check: lädt …</div>
-  </div></div>
+      <h1>„Vollgas. Fair. <span style="color:#7FB4FF">ASV.</span>“</h1>
 
-  <div class="card"><div class="pad">
-    <h3>🎤 Game-Day & Partner</h3>
-    <div class="band" aria-label="Partner & Game-Day">
-      <div class="pill">HEUTE · 14:30 · Karl-Rieger-Halle</div>
-      <div class="pill">Partner · Stadtwerke Viersen</div>
-      <div class="pill">Partner · ASV Förderkreis</div>
-      <div class="pill">Partner · Sporthaus Am Niederrhein</div>
-      <div class="pill">Partner · Max Consulting</div>
+      <div class="meta" style="margin-bottom:.35rem">Nächstes Spiel</div>
+      <div class="card" style="border:1px solid var(--line);background:linear-gradient(180deg,var(--panel2),var(--panel));">
+        <div class="pad">
+          <div id="nextMatch" class="skel"></div>
+          <div class="meta" id="countdown" style="margin-top:.3rem">–:–:–</div>
+          <div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-top:.7rem">
+            <a id="lnNuLiga" class="btn" target="_blank" rel="noopener">nuLiga</a>
+            <a id="lnHalle" class="btn" target="_blank" rel="noopener">Navigation</a>
+            <button id="btnJubel" class="btn primary" type="button">🎉 Jubel</button>
+          </div>
+          <div class="meta" style="margin-top:.5rem">Quelle & Zeit: <span id="liveStamp">lädt …</span></div>
+        </div>
+      </div>
+
+      <div class="kpis">
+        <div class="kpi"><div class="lbl">Platz</div><div id="kPlatz" class="val">—</div></div>
+        <div class="kpi"><div class="lbl">Punkte</div><div id="kPunkte" class="val">—</div></div>
+        <div class="kpi"><div class="lbl">Tordiff.</div><div id="kDiff" class="val">—</div></div>
+        <div class="kpi"><div class="lbl">Form (5)</div><div class="val"><div id="form5" class="spark"><span class="skel" style="width:160px;height:18px"></span></div></div></div>
+        <div class="kpi"><div class="lbl">TTI Ziel</div><div class="val">≤ 1,8 s</div></div>
+      </div>
+      <div id="selfcheck" class="meta" style="margin-top:.6rem">Self-Check: lädt …</div>
     </div>
-  </div></div>
+  </div>
+
+  <!-- RIGHT: Partner/News -->
+  <div class="card">
+    <div class="pad">
+      <h3>🎤 Game-Day & Partner</h3>
+      <div class="band" aria-label="Partner & Game-Day">
+        <div class="pill">HEUTE · 14:30 · Karl-Rieger-Halle</div>
+        <div class="pill">Partner · Stadtwerke Viersen</div>
+        <div class="pill">Partner · ASV Förderkreis</div>
+        <div class="pill">Partner · Sporthaus Am Niederrhein</div>
+        <div class="pill">Partner · Max Consulting</div>
+      </div>
+    </div>
+  </div>
 </section>
 
 <main class="c grid" style="margin-top:6px">
-  <section class="card"><div class="pad" style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;justify-content:space-between">
-    <div><h3 style="margin:.1rem 0">⚙️ Anzeige</h3><div class="meta">Eigene Darstellung – Live-Daten</div></div>
-    <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-      <select id="filterView" class="btn" aria-label="Tabellen-Filter"><option value="all">Alle Teams</option><option value="top3">Top-3</option><option value="asv">Nur ASV</option></select>
-      <button id="btnMini" class="btn" type="button">Mini-Tabelle</button>
+  <!-- FILTERS -->
+  <section class="card">
+    <div class="pad" style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap;justify-content:space-between">
+      <div><h3 style="margin:.1rem 0">⚙️ Anzeige</h3><div class="meta">Eigene Darstellung – Live-Daten</div></div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+        <select id="filterView" class="btn" aria-label="Tabellen-Filter">
+          <option value="all">Alle Teams</option>
+          <option value="top3">Top-3</option>
+          <option value="asv">Nur ASV</option>
+        </select>
+        <button id="btnMini" class="btn" type="button">Mini-Tabelle</button>
+      </div>
     </div>
-  </div></section>
+  </section>
 
-  <!-- Versteckte nuTab-Quellen (werden automatisch befüllt) -->
+  <!-- nuTab Datenquellen (versteckt) -->
   <div id="nutab-hidden" class="hidden" aria-hidden="true">
-    <div id="srcTab" class="srsTab"
+    <div id="srcTab"  class="srsTab"
          srsurl="https://hnr-handball.liga.nu/cgi-bin/WebObjects/nuLigaHBDE.woa/wa/groupPage?championship=KG+25%2F26&group=424318"
          srsVerein="ASV Süchteln"></div>
+
     <div id="srcPlan" class="srsPlan"
          srsurl="https://hnr-handball.liga.nu/cgi-bin/WebObjects/nuLigaHBDE.woa/wa/groupPage?championship=KG+25%2F26&group=424318"
          srsVerein="ASV Süchteln" srsAlle="1"></div>
   </div>
 
-  <!-- Live-Tabelle -->
-  <section class="card"><div class="pad">
-    <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:.8rem;flex-wrap:wrap">
-      <div><h3 style="margin:.1rem 0">🏆 Live-Tabelle</h3><div class="meta">Quelle: nuLiga</div></div>
-      <a class="btn" id="openGroup" target="_blank" rel="noopener">Gruppe öffnen</a>
+  <!-- LIVE TABELLE -->
+  <section class="card">
+    <div class="pad">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:.8rem;flex-wrap:wrap">
+        <div><h3 style="margin:.1rem 0">🏆 Live-Tabelle</h3><div class="meta">Quelle: nuLiga</div></div>
+        <a class="btn" id="openGroup" target="_blank" rel="noopener">Gruppe öffnen</a>
+      </div>
+      <div class="table" style="margin-top:10px">
+        <table id="tblTable" aria-live="polite">
+          <thead><tr>
+            <th>Rang</th><th style="text-align:left">Mannschaft</th><th>Sp.</th><th>S</th><th>U</th><th>N</th><th>Tore</th><th>+/-</th><th>Punkte</th>
+          </tr></thead>
+          <tbody id="tbodyTable"><tr><td colspan="9" style="text-align:left"><span class="skel"></span></td></tr></tbody>
+        </table>
+      </div>
+      <iframe id="tabFrame" class="frame" title="Tabelle (Fallback)"></iframe>
     </div>
-    <div class="table" style="margin-top:10px">
-      <table id="tblTable" aria-live="polite">
-        <thead><tr><th>Rang</th><th style="text-align:left">Mannschaft</th><th>Sp.</th><th>S</th><th>U</th><th>N</th><th>Tore</th><th>+/-</th><th>Punkte</th></tr></thead>
-        <tbody id="tbodyTable"><tr><td colspan="9" style="text-align:left"><span class="skel"></span></td></tr></tbody>
-      </table>
-    </div>
-    <iframe id="tabFrame" class="frame" title="Tabelle (Fallback)"></iframe>
-  </div></section>
+  </section>
 
-  <!-- Live-Spielplan -->
-  <section class="card"><div class="pad">
-    <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:.8rem;flex-wrap:wrap">
-      <div><h3 style="margin:.1rem 0">📅 Live-Spielplan</h3><div class="meta">Quelle: nuLiga</div></div>
-      <a class="btn" id="openTeam" target="_blank" rel="noopener">Teamseite öffnen</a>
+  <!-- LIVE SPIELPLAN -->
+  <section class="card">
+    <div class="pad">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:.8rem;flex-wrap:wrap">
+        <div><h3 style="margin:.1rem 0">📅 Live-Spielplan</h3><div class="meta">Quelle: nuLiga</div></div>
+        <a class="btn" id="openTeam" target="_blank" rel="noopener">Teamseite öffnen</a>
+      </div>
+      <div class="table" style="margin-top:10px">
+        <table id="tblPlan">
+          <thead><tr><th>Datum</th><th>Zeit</th><th>Halle</th><th>Nr.</th><th style="text-align:left">Begegnung</th><th>Ergebnis</th></tr></thead>
+          <tbody id="tbodyPlan"><tr><td colspan="6" style="text-align:left"><span class="skel"></span></td></tr></tbody>
+        </table>
+      </div>
+      <iframe id="planFrame" class="frame" title="Spielplan (Fallback)"></iframe>
     </div>
-    <div class="table" style="margin-top:10px">
-      <table id="tblPlan">
-        <thead><tr><th>Datum</th><th>Zeit</th><th>Halle</th><th>Nr.</th><th style="text-align:left">Begegnung</th><th>Ergebnis</th></tr></thead>
-        <tbody id="tbodyPlan"><tr><td colspan="6" style="text-align:left"><span class="skel"></span></td></tr></tbody>
-      </table>
-    </div>
-    <iframe id="planFrame" class="frame" title="Spielplan (Fallback)"></iframe>
-  </div></section>
+  </section>
 
-  <!-- Trainer & Team -->
-  <section class="card"><div class="pad">
-    <div style="display:flex;justify-content:space-between;align-items:center;gap:.8rem;flex-wrap:wrap">
-      <div><h3 style="margin:.1rem 0">👟 Trainer & Team</h3><div class="meta">ohne Fotos, DSGVO-clean</div></div>
-    </div>
-    <div id="profiles" class="profile"></div>
-  </div></section>
+  <!-- TEAM & TRAINER (ohne Fotos) -->
+  <section class="card">
+    <div class="pad">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:.8rem;flex-wrap:wrap">
+        <div><h3 style="margin:.1rem 0">👥 Team & Trainer</h3><div class="meta">Ohne Fotos · DSGVO-clean</div></div>
+      </div>
 
-  <!-- Schlagzeilen -->
-  <section class="card"><div class="pad" style="display:flex;justify-content:space-between;align-items:center;gap:.8rem;flex-wrap:wrap">
-    <div><h3 style="margin:.1rem 0">📰 Schlagzeilen</h3><div class="meta">handball-world (extern)</div></div>
-    <a class="btn" href="https://www.handball-world.news/schlagzeilen" target="_blank" rel="noopener">Jetzt lesen</a>
-  </div></section>
+      <div class="teamgrid" id="coaches"></div>
+      <div class="teamgrid" id="players" style="margin-top:.8rem"></div>
+    </div>
+  </section>
+
+  <!-- SCHLAGZEILEN -->
+  <section class="card">
+    <div class="pad" style="display:flex;justify-content:space-between;align-items:center;gap:.8rem;flex-wrap:wrap">
+      <div><h3 style="margin:.1rem 0">📰 Schlagzeilen</h3><div class="meta">handball-world (externer Link)</div></div>
+      <a class="btn" href="https://www.handball-world.news/schlagzeilen" target="_blank" rel="noopener">Jetzt lesen</a>
+    </div>
+  </section>
 </main>
 
 <footer><div class="c copy"><span>© 2025 ASV Einigkeit Süchteln – mE1</span><span>PWA · iPhone-ready · eigenes Tabellendesign · Live</span></div></footer>
 
+<!-- ====== APP SCRIPT ====== -->
 <script>
-const CFG={club:"ASV Süchteln",
-  groupUrl:"https://hnr-handball.liga.nu/cgi-bin/WebObjects/nuLigaHBDE.woa/wa/groupPage?championship=KG+25%2F26&group=424318",
-  teamPortrait:"https://hnr-handball.liga.nu/cgi-bin/WebObjects/nuLigaHBDE.woa/wa/teamPortrait?teamtable=2099701&pageState=vorrunde&championship=KG+25%2F26&group=424318"};
-const qs=s=>document.querySelector(s), stamp=()=>new Date().toLocaleTimeString("de-DE");
-openGroup.href=CFG.groupUrl; openTeam.href=CFG.teamPortrait; lnNuLiga.href=CFG.groupUrl;
+/*** === Konfiguration === ***/
+const CFG = {
+  club: "ASV Süchteln",
+  groupUrl: "https://hnr-handball.liga.nu/cgi-bin/WebObjects/nuLigaHBDE.woa/wa/groupPage?championship=KG+25%2F26&group=424318",
+  teamPortrait: "https://hnr-handball.liga.nu/cgi-bin/WebObjects/nuLigaHBDE.woa/wa/teamPortrait?teamtable=2099701&pageState=vorrunde&championship=KG+25%2F26&group=424318",
+  lsCacheKey: "asv_me1_cache_v3"
+};
+openGroup.href = CFG.groupUrl; openTeam.href = CFG.teamPortrait; lnNuLiga.href = CFG.groupUrl;
 
-/* Import nuTab → eigenes Design */
-function importTable(){const src=document.querySelector("#srcTab table"); if(!src) return false;
-  const tb=qs("#tbodyTable"); tb.innerHTML="";
-  [...src.querySelectorAll("tbody tr")].forEach((tr,i)=>{const t=tr.querySelectorAll("td"); if(t.length<9) return;
-    const rank=t[0].textContent.trim(), team=t[1].textContent.trim(), gp=t[2].textContent.trim(), w=t[3].textContent.trim(),
-          d=t[4].textContent.trim(), l=t[5].textContent.trim(), gf=t[6].textContent.trim(), ga=t[7].textContent.trim(),
-          diff=(parseInt(gf)||0)-(parseInt(ga)||0), pts=(t[9]||t[8]).textContent.trim();
-    const r=document.createElement("tr"); if(i<3) r.classList.add("top3"); if(team.includes(CFG.club)) r.classList.add("me");
-    r.dataset.rank=rank; r.dataset.team=team;
-    r.innerHTML=`<td>${rank}</td><td class="team">${team}</td><td>${gp}</td><td>${w}</td><td>${d}</td><td>${l}</td>
-                 <td>${gf}:${ga}</td><td class="diff ${diff>=0?'pos':'neg'}">${diff>=0?'+':''}${diff}</td><td>${pts}</td>`;
-    tb.appendChild(r);});
-  const me=[...tb.children].find(tr=>(tr.dataset.team||"").includes(CFG.club));
-  if(me){kPlatz.textContent=me.children[0].textContent;kPunkte.textContent=me.children[8].textContent;kDiff.textContent=me.children[7].textContent;}
-  return true;}
-function importPlan(){const src=document.querySelector("#srcPlan table"); if(!src) return false;
-  const tb=qs("#tbodyPlan"); tb.innerHTML=""; const res=[];
-  [...src.querySelectorAll("tbody tr")].forEach(tr=>{const t=tr.querySelectorAll("td"); if(t.length<6) return;
-    const d=t[0].textContent.trim(), ti=t[1].textContent.trim(), hal=t[2].textContent.trim(), nr=t[3].textContent.trim(),
-          vs=t[4].textContent.trim(), re=t[5].textContent.trim();
-    const r=document.createElement("tr"); r.innerHTML=`<td>${d}</td><td>${ti}</td><td>${hal}</td><td>${nr}</td>
-      <td style="text-align:left">${vs}</td><td>${re}</td>`; tb.appendChild(r);
-    if(re && vs.includes(CFG.club)){const [h,g]=re.split(":").map(x=>parseInt(x));
-      if(Number.isFinite(h)&&Number.isFinite(g)){const homeFirst=vs.startsWith(CFG.club); const asv=homeFirst?h:g, opp=homeFirst?g:h; res.push(asv>opp?"W":(asv<opp?"N":"U"));}}});
-  const upcoming=[...tb.children].find(tr=>!(tr.children[5].textContent||"").includes(":"));
-  nextMatch.classList.remove("skel"); if(upcoming){nextMatch.textContent=`${upcoming.children[0].textContent} · ${upcoming.children[1].textContent} · ${upcoming.children[4].textContent}`; lnHalle.href='https://maps.apple.com/?q='+encodeURIComponent(upcoming.children[2].textContent+' Viersen');} else {nextMatch.textContent="Alle Spiele absolviert";}
-  const wrap=qs("#form5"); wrap.innerHTML=""; (res.slice(-5).length?res.slice(-5):["–","–","–","–","–"]).forEach(s=>{const p=document.createElement("div"); p.className="pill"; p.textContent=s; wrap.appendChild(p);});
-  return true;}
-function hookNuTab(){const target=document.getElementById("nutab-hidden"); const state={tab:false,plan:false};
-  const obs=new MutationObserver(()=>{if(!state.tab) state.tab=importTable(); if(!state.plan) state.plan=importPlan();
-    if(state.tab && state.plan){liveStamp.textContent="Live (nuLiga via nuTab) · "+stamp(); selfcheck.textContent="OK · "+stamp(); obs.disconnect();}});
-  obs.observe(target,{childList:true,subtree:true}); setTimeout(()=>{importTable();importPlan();},900);}
+const qs = s => document.querySelector(s);
+const stamp = () => new Date().toLocaleTimeString("de-DE");
 
-/* Profile laden */
-async function loadProfiles(){try{const r=await fetch("./profiles.json",{cache:"no-store"}); const j=await r.json();
-  const host=qs("#profiles"); host.innerHTML="";
-  const rows=[...j.coaches.map(c=>({l:`Trainer: ${c.role}`,r:`${c.name} · ${c.license||'—'}`})),{l:"—",r:"—"},
-              ...j.players.map(p=>({l:`#${p.nr} ${p.name}`,r:`${p.position} · Stärken: ${p.strengths.join(", ")}`}))];
-  rows.forEach(o=>{const rr=document.createElement("div"); rr.className="row"; rr.innerHTML=`<span>${o.l}</span><span>${o.r}</span>`; host.appendChild(rr);});}catch{}}
-
-/* Fallback */
-function fallback(){tabFrame.src=CFG.groupUrl; planFrame.src=CFG.teamPortrait;
-  tabFrame.style.display=planFrame.style.display="block";
-  liveStamp.textContent="Direkt aus nuLiga (iFrame) · "+stamp();
-  selfcheck.textContent="nuTab blockiert → Fallback aktiv · "+stamp();}
-
-/* Boot + UI */
-function boot(){hookNuTab(); loadProfiles();
-  setTimeout(()=>{const ok=!!document.querySelector("#tbodyTable tr td"); if(!ok) fallback();},6500);
-  qs("#btnReload").addEventListener("click",()=>location.reload());
-  qs("#btnTheme").addEventListener("click",()=>{const cur=document.documentElement.getAttribute("data-theme")==="light"?"dark":"light";document.documentElement.setAttribute("data-theme",cur);localStorage.setItem("theme_asv",cur);});
-  if(localStorage.getItem("theme_asv")) document.documentElement.setAttribute("data-theme",localStorage.getItem("theme_asv"));
-  qs("#filterView").addEventListener("change",e=>{const v=e.target.value;[...qs("#tbodyTable").children].forEach(tr=>{const rank=+tr.dataset.rank, t=tr.dataset.team||"";tr.style.display=(v==="top3"&&rank>3)?"none":(v==="asv"&&!t.includes(CFG.club))?"none":"";});});
-  qs("#btnMini").addEventListener("click",()=>{const th=qs("#tblTable thead tr"); th.innerHTML="<th>Rang</th><th style='text-align:left'>Mannschaft</th><th>Punkte</th>";
-    [...qs("#tbodyTable").children].forEach(tr=>{const c=tr.children; tr.innerHTML=`<td>${c[0].textContent}</td><td class="team">${c[1].textContent}</td><td>${c[8].textContent}</td>`;});});
-  qs("#btnJubel").addEventListener("click",()=>{const n=document.createElement('div'); n.textContent='ASV! ASV! ASV!'; Object.assign(n.style,{position:'fixed',left:'50%',top:'50%',transform:'translate(-50%,-50%)',padding:'16px 20px',borderRadius:'16px',background:'linear-gradient(90deg,#E21B23,#0046AD)',color:'#fff',fontWeight:'900',zIndex:9999}); document.body.appendChild(n); setTimeout(()=>n.remove(),1100);});
-  let dp=null; window.addEventListener('beforeinstallprompt',(e)=>{e.preventDefault();dp=e;qs("#btnInstall").classList.remove('hidden')});
-  qs("#btnInstall").addEventListener('click',async()=>{if(dp){dp.prompt();dp=null;qs("#btnInstall").classList.add('hidden')}})
+/*** === Team-/Coach-Daten (ohne Fotos) === ***/
+const PROFILES = {
+  coaches: [
+    { name:"Daniel Salas Carneiro", role:"Trainer" },
+    { name:"Heiko Leovic", role:"Trainer" },
+    { name:"Markus Holstein", role:"Trainer" }
+  ],
+  players: [
+    { name:"Bela Gerhards", num:"2", pos:"Rückraum", hand:"rechts" },
+    { name:"Janis Hermann", num:"3", pos:"Außen", hand:"links" },
+    { name:"Joscha Busch", num:"4", pos:"Kreis", hand:"rechts" },
+    { name:"Konstantin Hölzl", num:"5", pos:"Rückraum", hand:"rechts" },
+    { name:"Leonard Tomanek", num:"6", pos:"Außen", hand:"rechts" },
+    { name:"Linus Buttgereit", num:"7", pos:"Rückraum", hand:"rechts" },
+    { name:"Luca Steves", num:"8", pos:"Rückraum", hand:"rechts" },
+    { name:"Mats Leovic", num:"9", pos:"Rückraum", hand:"rechts" },
+    { name:"Mio Kamp", num:"10", pos:"Außen", hand:"rechts" },
+    { name:"Nicholas Krause", num:"11", pos:"Tor", hand:"rechts" },
+    { name:"Nouh Loukili", num:"12", pos:"Außen", hand:"rechts" },
+    { name:"Paul Steppuhn", num:"13", pos:"Kreis", hand:"rechts" },
+    { name:"Till Holstein", num:"14", pos:"Rückraum", hand:"rechts" },
+    { name:"Xavi Salas Carneiro", num:"15", pos:"Außen", hand:"rechts" }
+  ]
+};
+function renderProfiles(){
+  const c=qs('#coaches'), p=qs('#players'); c.innerHTML=""; p.innerHTML="";
+  PROFILES.coaches.forEach(x=>{
+    const el=document.createElement('div'); el.className='player';
+    el.innerHTML=`<div class="num">🧑‍🏫 ${x.role}</div><div style="font-weight:900">${x.name}</div>`;
+    c.appendChild(el);
+  });
+  PROFILES.players.forEach(x=>{
+    const el=document.createElement('div'); el.className='player';
+    el.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center">
+      <div class="num">#${x.num||"–"}</div>
+      <div style="font-weight:900">${x.name}</div>
+    </div>
+    <div class="meta" style="margin-top:.35rem">${x.pos||"—"} · ${x.hand||"—"} · Jg. 2015/16</div>`;
+    p.appendChild(el);
+  });
 }
-document.addEventListener("DOMContentLoaded", boot);
+
+/*** === Import aus nuTab-Output → eigenes Design === ***/
+function importTableFromNuTab() {
+  const src = document.querySelector("#srcTab table"); if(!src) return false;
+  const body = qs("#tbodyTable"); body.innerHTML = "";
+  const rows = [...src.querySelectorAll("tbody tr")];
+  rows.forEach((tr,i)=>{
+    const t=tr.querySelectorAll("td"); if(t.length<8) return;
+    const rank=t[0].textContent.trim(), team=t[1].textContent.trim();
+    const gp=t[2].textContent.trim(), w=t[3].textContent.trim(), d=t[4].textContent.trim(), l=t[5].textContent.trim();
+    const goals=(t[6]?.textContent||"").trim(); // z.B. 207:110
+    const diffTxt=(t[7]?.textContent||"0").trim();
+    const pts=(t[8]||t[7])?.textContent.trim() || "";
+    let gf=0,ga=0; if(goals.includes(":")){const [a,b]=goals.split(":"); gf=parseInt(a); ga=parseInt(b);}
+    const diffN = Number.isFinite(parseInt(diffTxt)) ? parseInt(diffTxt) : (gf-ga);
+    const diff = (diffN>=0?"+":"")+diffN;
+
+    const r=document.createElement('tr');
+    if(i<3) r.classList.add('top3');
+    if(team.includes(CFG.club)) r.classList.add('me');
+    r.dataset.rank=rank; r.dataset.team=team;
+    r.innerHTML=`<td>${rank}</td><td class="team">${team}</td>
+      <td>${gp}</td><td>${w}</td><td>${d}</td><td>${l}</td>
+      <td>${goals||`${gf}:${ga}`}</td>
+      <td class="diff ${diffN>=0?'pos':'neg'}">${diff}</td>
+      <td>${pts}</td>`;
+    body.appendChild(r);
+  });
+
+  const me=[...body.children].find(tr=>(tr.dataset.team||"").includes(CFG.club));
+  if(me){ kPlatz.textContent=me.children[0].textContent; kPunkte.textContent=me.children[8].textContent; kDiff.textContent=me.children[7].textContent; }
+  return true;
+}
+
+function importPlanFromNuTab() {
+  const src = document.querySelector("#srcPlan table"); if(!src) return false;
+  const body = qs("#tbodyPlan"); body.innerHTML="";
+  const rows = [...src.querySelectorAll("tbody tr")];
+  const results=[];
+  rows.forEach(tr=>{
+    const t=tr.querySelectorAll("td"); if(t.length<6) return;
+    const d=(t[0]?.textContent||"").trim(), ti=(t[1]?.textContent||"").trim(), hal=(t[2]?.textContent||"").trim();
+    const nr=(t[3]?.textContent||"").trim(), vs=(t[4]?.textContent||"").trim(), res=(t[5]?.textContent||"").trim();
+    const r=document.createElement('tr');
+    r.innerHTML=`<td>${d}</td><td>${ti}</td><td>${hal}</td><td>${nr}</td><td style="text-align:left">${vs}</td><td>${res}</td>`;
+    body.appendChild(r);
+
+    if(res && vs.includes(CFG.club)){
+      const [h,g]=res.split(":").map(x=>parseInt(x));
+      if(Number.isFinite(h)&&Number.isFinite(g)){
+        const isHome = vs.startsWith(CFG.club);
+        const asv=isHome?h:g, opp=isHome?g:h;
+        results.push(asv>opp?"W":(asv<opp?"N":"U"));
+      }
+    }
+  });
+
+  // nächstes Spiel + Countdown + Navigation
+  const firstOpen=[...body.children].find(tr=>!(tr.children[5].textContent||"").includes(":"));
+  if(firstOpen){
+    const d=firstOpen.children[0].textContent, t=firstOpen.children[1].textContent, pair=firstOpen.children[4].textContent;
+    nextMatch.classList.remove('skel'); nextMatch.textContent=`${d} · ${t} · ${pair}`;
+    lnHalle.href='https://maps.apple.com/?q='+encodeURIComponent(firstOpen.children[2].textContent+' Viersen');
+
+    // Countdown (lokale deutsche Zeit, dd.mm.yyyy hh:mm)
+    const [dd,mm,yyyy]=d.split("."); const dt = new Date(`${yyyy}-${mm}-${dd}T${t||"00:00"}:00`);
+    const tick=()=>{ const ms=dt - new Date(); if(ms<=0){countdown.textContent="Jetzt!"; return;}
+      const sec=Math.floor(ms/1000), h=Math.floor(sec/3600), m=Math.floor((sec%3600)/60), s=sec%60;
+      countdown.textContent=`T-${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+      requestAnimationFrame(()=>setTimeout(tick,500));
+    }; tick();
+  }else{
+    nextMatch.classList.remove('skel'); nextMatch.textContent="Alle Spiele absolviert"; countdown.textContent="—";
+  }
+
+  // Formkurve (letzte 5)
+  const last5=results.slice(-5); const wrap=qs("#form5"); wrap.innerHTML=""; wrap.dataset.bound="1";
+  if(last5.length){ last5.forEach(s=>{const b=document.createElement('span'); b.className=s; wrap.appendChild(b);}); }
+  else { wrap.innerHTML="<span class='meta'>keine Ergebnisse</span>"; }
+  return true;
+}
+
+/*** === Beobachter: wenn nuTab rendert, übernehmen wir === ***/
+function hookNuTabObserver(){
+  const target=qs('#nutab-hidden'); const once={table:false,plan:false};
+  const tryImport=()=>{ if(!once.table) once.table=importTableFromNuTab(); if(!once.plan) once.plan=importPlanFromNuTab();
+    if(once.table&&once.plan){ liveStamp.textContent="Live (nuLiga via nuTab) · "+stamp(); selfcheck.textContent="nuTab OK · "+stamp(); obs.disconnect(); } };
+  const obs=new MutationObserver(tryImport); obs.observe(target,{childList:true,subtree:true}); setTimeout(tryImport,900);
+}
+
+/*** === Fallback (iFrames) falls nuTab blockiert === ***/
+function scheduleFallback(){
+  setTimeout(()=>{
+    const hasRows = !!qs("#tbodyTable tr") && !qs("#tbodyTable .skel");
+    if(!hasRows){
+      tabFrame.src=CFG.groupUrl; planFrame.src=CFG.teamPortrait;
+      tabFrame.style.display=planFrame.style.display="block";
+      liveStamp.textContent="Direkt aus nuLiga (Fallback) · "+stamp();
+      selfcheck.textContent="nuTab/JSON blockiert → iFrame aktiv · "+stamp();
+    }
+  },6000);
+}
+
+/*** === UI & PWA === */
+btnReload.addEventListener("click",()=>location.reload());
+btnTheme.addEventListener("click",()=>{ const d=document.documentElement; const cur=d.getAttribute("data-theme")==="light"?"dark":"light"; d.setAttribute("data-theme",cur); localStorage.setItem("theme_asv",cur); });
+if(localStorage.getItem("theme_asv")) document.documentElement.setAttribute("data-theme",localStorage.getItem("theme_asv"));
+btnShare.addEventListener("click",async()=>{
+  try{ if(navigator.share){ await navigator.share({title:document.title,text:"ASV Süchteln mE1 – Live Tabelle & Spielplan",url:location.href}); } else { await navigator.clipboard.writeText(location.href); alert("Link kopiert!"); } }catch(_){}
+});
+btnJubel.addEventListener('click',()=>{ const n=document.createElement('div'); n.textContent='ASV! ASV! ASV!';
+  Object.assign(n.style,{position:'fixed',left:'50%',top:'50%',transform:'translate(-50%,-50%)',padding:'16px 20px',borderRadius:'16px',background:'linear-gradient(90deg,#E21B23,#0046AD)',color:'#fff',fontWeight:'900',zIndex:9999,boxShadow:'var(--sh)',fontSize:'20px'}); document.body.appendChild(n); setTimeout(()=>n.remove(),900);
+});
+filterView.addEventListener("change",()=>{
+  const v=filterView.value; [...qs("#tbodyTable").children].forEach(tr=>{
+    const rank=+tr.dataset.rank; const team=tr.dataset.team||"";
+    tr.style.display=(v==="top3" && rank>3)?"none":(v==="asv" && !team.includes(CFG.club))?"none":"";
+  });
+});
+btnMini.addEventListener("click",()=>{
+  const thead=qs("#tblTable thead tr"); thead.innerHTML="<th>Rang</th><th style='text-align:left'>Mannschaft</th><th>Punkte</th>";
+  [...qs("#tbodyTable").children].forEach(tr=>{ const c=tr.children; tr.innerHTML=`<td>${c[0].textContent}</td><td class="team">${c[1].textContent}</td><td>${c[8].textContent}</td>`; });
+  btnMini.disabled=true;
+});
+
+/*** === PWA Install Hint === */
+let deferredPrompt=null;
+window.addEventListener('beforeinstallprompt',(e)=>{e.preventDefault();deferredPrompt=e;btnInstall.classList.remove('hidden')});
+btnInstall?.addEventListener('click',async()=>{if(deferredPrompt){deferredPrompt.prompt();deferredPrompt=null;btnInstall.classList.add('hidden')}});
+
+/*** === Service Worker (App-Shell Cache minimal) === */
+if('serviceWorker' in navigator){
+  const sw=`const C='asvme1-v1';self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(['./'])));self.skipWaiting()});self.addEventListener('activate',e=>self.clients.claim());self.addEventListener('fetch',e=>{const u=new URL(e.request.url);if(u.origin===location.origin){e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(res=>{caches.open(C).then(c=>c.put(e.request,res.clone()));return res})))}});`;
+  navigator.serviceWorker.register(URL.createObjectURL(new Blob([sw],{type:'text/javascript'})));
+}
+
+/*** === Boot === */
+function boot(){
+  renderProfiles();
+  hookNuTabObserver();
+  scheduleFallback();
+  liveStamp.textContent="lädt … "+stamp();
+  selfcheck.textContent="Warte auf nuTab …";
+  openGroup.href=CFG.groupUrl; openTeam.href=CFG.teamPortrait; lnNuLiga.href=CFG.groupUrl;
+}
+boot();
 </script>
 </body>
 </html>
+
 
 
 
