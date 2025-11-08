@@ -31,3 +31,12 @@ export const diffHuman = (target: Date, now = new Date()) => {
   const m = Math.floor((s%3600)/60);
   return (d?`${d} T `:'') + (h?`${h} h `:'') + `${m} m`;
 };
+// src/utils/ui.ts (am Ende ergänzen)
+export const abbrName = (full: string) => {
+  if (!full) return '—';
+  const parts = full.trim().split(/\s+/);
+  if (parts.length < 2) return full;          // z.B. Einzelname
+  const first = parts[0];
+  const lastInitial = parts[parts.length - 1][0]?.toUpperCase() || '';
+  return `${first} ${lastInitial}.`;           // "Yuna S."
+};
