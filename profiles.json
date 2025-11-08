@@ -1,0 +1,26 @@
+{
+  "coaches": [
+    { "name": "Max Beispiel", "role": "Head Coach", "license": "C-Lizenz Kinderhandball" },
+    { "name": "Alex Muster", "role": "Co-Coach", "license": "Kindertrainer Basis" }
+  ],
+  "players": [
+    { "nr": 1,  "name": "Linus", "position": "Tor",       "strengths": ["Reflexe", "Mut"] },
+    { "nr": 7,  "name": "Maja",  "position": "Rückraum",  "strengths": ["Wurf", "Übersicht"] },
+    { "nr": 9,  "name": "Leo",   "position": "Kreis",     "strengths": ["Durchbruch", "Block"] },
+    { "nr": 11, "name": "Yuna",  "position": "Außen",     "strengths": ["Schnelligkeit", "1-gegen-0"] }
+  ]
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
