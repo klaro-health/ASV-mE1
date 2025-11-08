@@ -1,14 +1,10 @@
-# .github/workflows/scrape.yml
 name: Fetch nuLiga → snapshots
-
 on:
   schedule:
-    - cron: '*/15 * * * *'   # alle 15 Minuten
-  workflow_dispatch:        # manuell startbar
-
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
 permissions:
   contents: write
-
 jobs:
   scrape:
     runs-on: ubuntu-latest
