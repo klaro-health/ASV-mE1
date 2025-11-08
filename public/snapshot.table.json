@@ -1,0 +1,7 @@
+{
+  "rows": [
+    { "Platz": 1, "Team_Kurzname": "ASV Süchteln mE1", "Spiele": 6, "SpieleGewonnen": 5, "SpieleUnentschieden": 0, "SpieleVerloren": 1, "PlusTore": 98, "MinusTore": 72, "DiffTore": 26, "PlusPunkte": 10, "MinusPunkte": 2 },
+    { "Platz": 2, "Team_Kurzname": "TV Lobberich",     "Spiele": 6, "SpieleGewonnen": 4, "SpieleUnentschieden": 1, "SpieleVerloren": 1, "PlusTore": 96, "MinusTore": 70, "DiffTore": 26, "PlusPunkte": 9,  "MinusPunkte": 3 },
+    { "Platz": 3, "Team_Kurzname": "HC Düsseldorf",    "Spiele": 6, "SpieleGewonnen": 4, "SpieleUnentschieden": 0, "SpieleVerloren": 2, "PlusTore": 92, "MinusTore": 79, "DiffTore": 13, "PlusPunkte": 8,  "MinusPunkte": 4 }
+  ]
+}
