@@ -262,3 +262,443 @@ jobs:
             { "date": "2025-11-01T13:00:00", "home": "ASV Süchteln", "away": "SG Muster", "result": "22:20" },
             { "date": "2025-10-25T16:00:00", "home": "HSV Demo", "away": "ASV Süchteln", "result": "18:18" },
             { "date": "2025-10-18T14:30:00", "home": "ASV Süchteln", "away": "TV Sample", "result": "17:19" },
+            { "date": "2025-10-11T14:00:00", "home": "ASV Süchteln", "away": "SC Probe", "result": "24:19" },
+            { "date": "2025-10-04T14:00:00", "home": "SC Test", "away": "ASV Süchteln", "result": "21:23" }
+          ]
+          EOF
+
+          #############################
+          # public/scripts/config.js
+          #############################
+          cat > public/scripts/config.js <<'EOF'
+          export const CONFIG = {
+            branding: {
+              teamName: "ASV Süchteln",
+              slogan: "Fair. Vollgas. ASV!",
+              heroTitle: "„Volle Halle. Volle Herzen.“"
+            },
+            colors: { primary: "#0046AD", accent: "#E21B23" },
+            clubFilter: "ASV",
+            nuliga: {
+              mode: "html", // "json" oder "html"
+              tableUrl: "https://example.com/nuliga/tabelle",
+              scheduleUrl: "https://example.com/nuliga/spielplan",
+              // Wenn CORS blockt: Proxy (read-only), z. B. "https://r.jina.ai/http://"
+              corsProxy: ""
+            },
+            news: { rssUrl: "", corsProxy: "" }
+          };
+          EOF
+
+          ########################
+          # public/scripts/lib/*
+          ########################
+          cat > public/scripts/lib/dom.js <<'EOF'
+          export const $ = (sel, root = document) => root.querySelector(sel);
+          export const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+          export const el = (tag, props = {}, ...children) => {
+            const n = Object.assign(document.createElement(tag), props);
+            for (const c of children.flat()) if (c != null) n.appendChild(typeof c === "string" ? document.createTextNode(c) : c);
+            return n;
+          };
+          export const clear = (node) => (node.innerHTML = "", node);
+          export const time = (d) => (d instanceof Date ? d : new Date(d));
+          export const fmtDate = (d) => time(d).toLocaleDateString([], { day:"2-digit", month:"2-digit", year:"numeric" });
+          export const fmtTime = (d) => time(d).toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" });
+          EOF
+
+          cat > public/scripts/lib/storage.js <<'EOF'
+          const SCOPE = "asv-live";
+          export const put = (key, value) => localStorage.setItem(`${SCOPE}:${key}`, JSON.stringify({ t: Date.now(), value }));
+          export const get = (key) => {
+            try { const raw = localStorage.getItem(`${SCOPE}:${key}`); return raw ? JSON.parse(raw) : null; }
+            catch { return null; }
+          };
+          EOF
+
+          cat > public/scripts/lib/sparkline.js <<'EOF'
+          export function renderSparkline(svgEl, values = []) {
+            const w = 100, h = 30, p = 2;
+            svgEl.setAttribute("viewBox", `0 0 ${w} ${h}`);
+            while (svgEl.firstChild) svgEl.removeChild(svgEl.firstChild);
+            if (!values.length) return;
+            const step = (w - 2*p) / (values.length - 1 || 1);
+            const pts = values.map((v,i) => [p + i * step, h - p - v * (h - 2*p)]);
+            const d = pts.map((p,i) => (i ? "L" : "M") + p[0] + " " + p[1]).join(" ");
+            const path = document.createElementNS("http://www.w3.org/2000/svg","path");
+            path.setAttribute("d", d);
+            path.setAttribute("fill","none");
+            path.setAttribute("stroke","currentColor");
+            path.setAttribute("stroke-width","2");
+            svgEl.appendChild(path);
+          }
+          EOF
+
+          ##################################
+          # public/scripts/datafeeds/*
+          ##################################
+          cat > public/scripts/datafeeds/nuliga.js <<'EOF'
+          import { CONFIG } from "../config.js";
+          const withProxy = (url, proxy) => proxy ? proxy + url : url;
+
+          export async function fetchTable() {
+            const url = withProxy(CONFIG.nuliga.tableUrl, CONFIG.nuliga.corsProxy);
+            if (CONFIG.nuliga.mode === "json") {
+              const res = await fetch(url); if (!res.ok) throw new Error("Table fetch failed");
+              const json = await res.json(); return normalizeTableFromJson(json);
+            }
+            const html = await fetchHtml(url);
+            return parseTableFromHtml(html);
+          }
+
+          export async function fetchSchedule() {
+            const url = withProxy(CONFIG.nuliga.scheduleUrl, CONFIG.nuliga.corsProxy);
+            if (CONFIG.nuliga.mode === "json") {
+              const res = await fetch(url); if (!res.ok) throw new Error("Schedule fetch failed");
+              const json = await res.json(); return normalizeScheduleFromJson(json);
+            }
+            const html = await fetchHtml(url);
+            return parseScheduleFromHtml(html);
+          }
+
+          async function fetchHtml(url) {
+            const res = await fetch(url, { mode: CONFIG.nuliga.corsProxy ? "cors" : "no-cors" });
+            if (!res.ok || res.type === "opaque") { const err = new Error("CORS or opaque"); err.code="OPAQUE"; throw err; }
+            return await res.text();
+          }
+
+          function parseTableFromHtml(html) {
+            const doc = new DOMParser().parseFromString(html, "text/html");
+            const table = doc.querySelector("table"); if (!table) throw new Error("No table found");
+            const rows = Array.from(table.querySelectorAll("tbody tr, tr")).filter(r => r.querySelectorAll("td").length >= 4);
+            const out = rows.map((tr) => {
+              const td = tr.querySelectorAll("td");
+              const text = [...td].map(x => x.textContent.replace(/\s+/g," ").trim());
+              const team = text.find(t => /[A-Za-zÄÖÜäöü]/.test(t)) || "";
+              const rank = Number(text[0].replace(/\D+/g,"")) || null;
+              const games = Number(text.find(t => /^\d+$/.test(t))) || null;
+              const pts = Number((text.at(-1)||"").replace(/\D+/g,"")) || null;
+              const diff = (() => { const d = text.find(t => /[+\-]\d+/.test(t)); return d ? Number(d.replace(/[^\-0-9]/g,"")) : null; })();
+              return { rank, team, games, diff, points: pts };
+            }).filter(x => x.team);
+            return dedupe(out,"team").sort((a,b)=>(a.rank??999)-(b.rank??999) || (b.points??0)-(a.points??0));
+          }
+
+          function parseScheduleFromHtml(html) {
+            const doc = new DOMParser().parseFromString(html, "text/html");
+            const table = doc.querySelector("table"); if (!table) throw new Error("No schedule table");
+            const rows = Array.from(table.querySelectorAll("tbody tr, tr")).filter(r => r.querySelectorAll("td").length >= 4);
+            const evts = rows.map((tr) => {
+              const td = tr.querySelectorAll("td");
+              const cells = [...td].map(x => x.textContent.replace(/\s+/g," ").trim());
+              const dateStr = cells.find(c => /\d{1,2}\.\d{1,2}\.\d{2,4}/.test(c)) || "";
+              const timeStr = cells.find(c => /\d{1,2}:\d{2}/.test(c)) || "00:00";
+              const [d,m,y] = (dateStr.match(/(\d{1,2})\.(\d{1,2})\.(\d{2,4})/) || []).slice(1).map(Number);
+              const date = y ? new Date((y<100?2000+y:y), m-1, d, +timeStr.split(":")[0], +timeStr.split(":")[1]) : null;
+              const home = cells[2] || "", away = cells[3] || "";
+              const res = cells.find(c => /^\d+\s*:\s*\d+$/.test(c)) || null;
+              return { date, home, away, result: res };
+            }).filter(e => e.home && e.away && e.date instanceof Date && !isNaN(+e.date));
+            return evts.sort((a,b)=>+a.date-+b.date);
+          }
+
+          function normalizeTableFromJson(json) {
+            return (json.teams||[]).map((t,i)=>({ rank:i+1, team:t.name, games:t.games, diff:t.goalDiff, points:t.points }));
+          }
+          function normalizeScheduleFromJson(json) {
+            return (json.matches||[]).map(m => ({ date:new Date(m.date), home:m.home, away:m.away, result:m.result??null }));
+          }
+          function dedupe(arr,key){ const s=new Set(), out=[]; for(const it of arr){ if(it[key]&&!s.has(it[key])){s.add(it[key]); out.push(it);} } return out; }
+          EOF
+
+          cat > public/scripts/datafeeds/news.js <<'EOF'
+          import { CONFIG } from "../config.js";
+          export async function fetchNews(max = 6) {
+            if (!CONFIG.news.rssUrl) return [];
+            const url = CONFIG.news.corsProxy ? CONFIG.news.corsProxy + CONFIG.news.rssUrl : CONFIG.news.rssUrl;
+            try {
+              const res = await fetch(url, { mode: CONFIG.news.corsProxy ? "cors" : "no-cors" });
+              if (!res.ok || res.type === "opaque") throw new Error("rss opaque");
+              const xml = await res.text();
+              const doc = new DOMParser().parseFromString(xml, "application/xml");
+              const items = [...doc.querySelectorAll("item")].slice(0, max).map(x=>({
+                title: x.querySelector("title")?.textContent?.trim() || "News",
+                link: x.querySelector("link")?.textContent?.trim() || "#",
+                date: new Date(x.querySelector("pubDate")?.textContent || Date.now())
+              }));
+              return items;
+            } catch { return []; }
+          }
+          EOF
+
+          #############################
+          # public/scripts/ui/*
+          #############################
+          cat > public/scripts/ui/cheer.js <<'EOF'
+          export function setupCheer(button) {
+            if (!button) return;
+            button.addEventListener("click", () => {
+              confetti(button);
+              playCheer();
+              button.disabled = true;
+              setTimeout(() => (button.disabled = false), 1200);
+            });
+          }
+          function confetti(anchor){
+            const n = 28, rect = anchor.getBoundingClientRect();
+            for (let i=0;i<n;i++){
+              const p = document.createElement("span");
+              p.className = "confetti";
+              Object.assign(p.style, {
+                position:"fixed", left: (rect.left + rect.width/2) + "px", top:(rect.top) + "px",
+                width:"8px", height:"8px", background: i%2? "var(--asv-red)":"var(--asv-blue)",
+                transform:`translate(${(Math.random()-0.5)*160}px, -${Math.random()*60}px) rotate(${Math.random()*360}deg)`,
+                borderRadius:"2px", transition:"transform .9s ease, opacity .9s ease", zIndex:9999
+              });
+              document.body.appendChild(p);
+              requestAnimationFrame(()=>{ p.style.opacity="0"; p.style.transform=`translate(${(Math.random()-0.5)*300}px, ${220+Math.random()*120}px) rotate(${Math.random()*720}deg)`; });
+              setTimeout(()=>p.remove(), 950);
+            }
+          }
+          function playCheer(){
+            try {
+              const ctx = new (window.AudioContext||window.webkitAudioContext)();
+              const dur = 0.9;
+              const noise = ctx.createBufferSource();
+              const buf = ctx.createBuffer(1, ctx.sampleRate*dur, ctx.sampleRate);
+              const data = buf.getChannelData(0);
+              for (let i=0;i<data.length;i++){ data[i] = (Math.random()*2-1) * (1 - i/data.length); }
+              noise.buffer = buf;
+              const band = ctx.createBiquadFilter(); band.type="bandpass"; band.frequency.value=1500; band.Q.value=0.7;
+              const gain = ctx.createGain(); gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+              gain.gain.exponentialRampToValueAtTime(0.7, ctx.currentTime + 0.08);
+              gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + dur);
+              noise.connect(band).connect(gain).connect(ctx.destination);
+              noise.start(); noise.stop(ctx.currentTime + dur);
+            } catch {}
+          }
+          EOF
+
+          cat > public/scripts/ui/components.js <<'EOF'
+          import { el, clear, fmtDate, fmtTime } from "../lib/dom.js";
+          import { CONFIG } from "../config.js";
+          import { renderSparkline } from "../lib/sparkline.js";
+
+          export function renderTable(root, rows, { top3 = true } = {}) {
+            clear(root);
+            if (!rows?.length) return root.append(el("p", { className:"muted" }, "Keine Tabellendaten."));
+            const data = top3 ? rows.slice(0,3) : rows;
+            const tbl = el("table", { className:"table fade-in", role:"table", "aria-label":"Ligatabelle" },
+              el("thead", {}, el("tr", {},
+                el("th", {}, "#"), el("th", {}, "Team"), el("th", {}, "Sp."), el("th", {}, "Diff"), el("th", {}, "Pkt.")
+              )),
+              el("tbody", {}, data.map(r => el("tr", { "data-asv": String(r.team.includes(CONFIG.clubFilter)) },
+                el("td", {}, r.rank ?? "–"),
+                el("td", {}, r.team),
+                el("td", {}, r.games ?? "–"),
+                el("td", {}, r.diff ?? "–"),
+                el("td", {}, r.points ?? "–"),
+              )))
+            );
+            root.append(tbl);
+          }
+
+          export function renderSchedule(root, games, { onlyASV = true, upcoming = true } = {}) {
+            clear(root);
+            if (!games?.length) return root.append(el("p", { className:"muted" }, "Keine Spiele gefunden."));
+            let list = games.slice().sort((a,b)=>+a.date-+b.date);
+            if (onlyASV) list = list.filter(g => [g.home, g.away].some(n => n?.includes(CONFIG.clubFilter)));
+            if (upcoming) list = list.filter(g => +g.date >= Date.now() - 2*3600e3);
+            const tbl = el("table", { className:"table fade-in", role:"table", "aria-label":"Spielplan" },
+              el("thead", {}, el("tr", {}, el("th", {}, "Datum"), el("th", {}, "Zeit"), el("th", {}, "Heim"), el("th", {}, "Gast"), el("th", {}, "Ergebnis"))),
+              el("tbody", {}, list.map(g => el("tr", {},
+                el("td", {}, fmtDate(g.date)),
+                el("td", {}, fmtTime(g.date)),
+                el("td", {}, g.home),
+                el("td", {}, g.away),
+                el("td", {}, g.result ?? "–")
+              )))
+            );
+            root.append(tbl);
+          }
+
+          export function renderNextAndForm(countdownEl, formTextEl, formSparkEl, schedule, clubFilter) {
+            const now = Date.now();
+            const next = schedule?.find(g => +g.date >= now);
+            if (next) updateCountdown(countdownEl, next.date); else countdownEl.textContent = "Kein anstehendes Spiel.";
+            const last5 = schedule?.filter(g => +g.date < now && g.result)?.slice(-5) || [];
+            const seq = last5.map(g => {
+              const [a,b] = g.result.split(":").map(n=>parseInt(n,10));
+              const asvHome = g.home.includes(clubFilter), asvAway = g.away.includes(clubFilter);
+              const asv = asvHome ? a : asvAway ? b : null;
+              const opp = asvHome ? b : asvAway ? a : null;
+              if (asv == null || opp == null) return 0.5;
+              return asv > opp ? 1 : asv === opp ? 0.5 : 0;
+            });
+            formTextEl.textContent = seq.map(v => v===1?"W":v===0.5?"D":"L").join(" ") || "–";
+            renderSparkline(formSparkEl, seq.length ? seq : [0.5,0.5,0.5,0.5,0.5]);
+          }
+
+          export function updateCountdown(node, targetDate) {
+            const tick = () => {
+              const diff = +targetDate - Date.now();
+              if (diff <= 0) { node.textContent = "Anwurf!"; return; }
+              const s = Math.floor(diff/1000);
+              const d = Math.floor(s/86400), h = Math.floor((s%86400)/3600), m = Math.floor((s%3600)/60), sec = s%60;
+              node.textContent = `Start in ${d}d ${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(sec).padStart(2,"0")}`;
+              requestAnimationFrame(()=>setTimeout(tick, 240));
+            };
+            tick();
+          }
+
+          export function renderRoster(root, roster) {
+            clear(root);
+            if (!roster?.players?.length) { root.append(el("p",{className:"muted"},"Noch kein Kader hinterlegt.")); return; }
+            const list = el("div", { className:"fade-in" },
+              ...roster.players.map(p => el("div", { className:"player-row", style:"display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding:8px 0" },
+                el("div", {}, el("strong", {}, p.nr ? `#${p.nr} ` : ""), p.name, " · ", el("span",{className:"muted"}, p.pos || "–")),
+                el("div", {}, el("span", { className:"badge" }, p.vibe || "Teamplayer 🤝"))
+              ))
+            );
+            const staff = el("div", { style:"margin-top:10px" },
+              el("h3", {}, "Trainerteam"),
+              ...((roster.staff||[]).map(s => el("div", {}, s.role, ": ", el("strong",{},s.name), " ", el("span",{className:"muted"}, s.fact||""))))
+            );
+            root.append(list, staff);
+          }
+
+          export function renderNews(root, items) {
+            clear(root);
+            if (!items?.length) {
+              root.append(el("p", {className:"muted"}, "Kein RSS-Zugriff – öffne handball-world direkt: ",
+                el("a", { href:"https://www.handball-world.news/", target:"_blank", rel:"noopener" }, "handball-world")));
+              return;
+            }
+            const ul = el("ul", { style:"list-style:none;margin:0;padding:0" },
+              items.map(n => el("li", { style:"padding:6px 0;border-bottom:1px solid var(--border)" },
+                el("a", { href:n.link, target:"_blank", rel:"noopener" }, n.title),
+                " ", el("span", { className:"muted" }, `(${n.date.toLocaleDateString()})`)
+              ))
+            );
+            root.append(ul);
+          }
+          EOF
+
+          ##########################
+          # public/scripts/app.js
+          ##########################
+          cat > public/scripts/app.js <<'EOF'
+          import { $, el } from "./lib/dom.js";
+          import { get, put } from "./lib/storage.js";
+          import { CONFIG } from "./config.js";
+          import { fetchTable, fetchSchedule } from "./datafeeds/nuliga.js";
+          import { fetchNews } from "./datafeeds/news.js";
+          import { renderTable, renderSchedule, renderNextAndForm, renderRoster, renderNews } from "./ui/components.js";
+          import { setupCheer } from "./ui/cheer.js";
+
+          const state = { table:null, schedule:null, opaque:false };
+
+          $("#brand-title").textContent = CONFIG.branding.teamName;
+          $("#brand-sub").textContent = CONFIG.branding.slogan;
+          $("#hero-title").textContent = CONFIG.branding.heroTitle;
+          $("#year").textContent = new Date().getFullYear();
+
+          (function themeInit(){
+            const saved = localStorage.getItem("asv-theme");
+            if (saved) document.documentElement.setAttribute("data-theme", saved);
+            $("#btn-theme").addEventListener("click", () => {
+              const cur = document.documentElement.getAttribute("data-theme") || "auto";
+              const next = cur === "auto" ? "light" : cur === "light" ? "dark" : "auto";
+              document.documentElement.setAttribute("data-theme", next);
+              localStorage.setItem("asv-theme", next);
+              $("#btn-theme").setAttribute("aria-pressed", String(next !== "auto"));
+            });
+          })();
+
+          $("#btn-share").addEventListener("click", async () => {
+            const data = { title: `${CONFIG.branding.teamName} · Live`, text: CONFIG.branding.slogan, url: location.href };
+            try { if (navigator.share) await navigator.share(data); else { await navigator.clipboard.writeText(location.href); alert("Link kopiert ✅"); } }
+            catch {}
+          });
+
+          const fltTop=$("#flt-top"), fltOnly=$("#flt-only-asv"), fltUpc=$("#flt-upcoming");
+          fltTop.checked = true; fltOnly.checked = true; fltUpc.checked = true;
+          fltTop.addEventListener("change", () => state.table && hydrateTable());
+          fltOnly.addEventListener("change", () => state.schedule && hydrateSchedule());
+          fltUpc.addEventListener("change", () => state.schedule && hydrateSchedule());
+
+          setupCheer($("#btn-cheer"));
+
+          (function(){
+            const t=get("table"), s=get("schedule");
+            if (t?.value){ state.table=t.value; hydrateTable(); setUpdated("#tbl-updated", t.t); }
+            if (s?.value){ state.schedule = s.value.map(x=>({...x, date:new Date(x.date)})); hydrateSchedule(); renderNextAndForm($("#countdown"), $("#form-value"), $("#form-spark"), state.schedule, CONFIG.clubFilter); }
+          })();
+
+          fetch("./data/roster.json").then(r=>r.json()).then(j=>renderRoster($("#roster-body"), j)).catch(()=>{});
+          fetchNews(6).then(items => renderNews($("#news-body"), items));
+
+          init().catch(console.warn);
+
+          async function init(){
+            try{
+              const [table, schedule] = await Promise.all([fetchTable(), fetchSchedule()]);
+              state.table = table;
+              state.schedule = schedule;
+              put("table", table); put("schedule", schedule);
+              hydrateTable(); hydrateSchedule();
+              renderNextAndForm($("#countdown"), $("#form-value"), $("#form-spark"), state.schedule, CONFIG.clubFilter);
+              setUpdated("#tbl-updated", Date.now());
+            } catch (err){
+              console.warn(err);
+              if (err?.code==="OPAQUE"){ state.opaque = true; const details=$("#iframe-fallback"); const iframe=$("#iframe-el"); details.hidden=false; iframe.src = CONFIG.nuliga.tableUrl; }
+              if (!state.schedule){
+                try {
+                  const res = await fetch("./data/schedule.sample.json"); const sample = await res.json();
+                  state.schedule = sample.map(x=>({...x, date:new Date(x.date)}));
+                  hydrateSchedule();
+                  renderNextAndForm($("#countdown"), $("#form-value"), $("#form-spark"), state.schedule, CONFIG.clubFilter);
+                } catch {}
+              }
+            }
+          }
+
+          function hydrateTable(){ renderTable($("#table-body"), state.table, { top3: fltTop.checked }); }
+          function hydrateSchedule(){ renderSchedule($("#schedule-body"), state.schedule, { onlyASV: fltOnly.checked, upcoming: fltUpc.checked }); }
+          function setUpdated(sel, t){ const el = document.querySelector(sel); if (el) el.textContent = new Date(t).toLocaleTimeString(); }
+          EOF
+
+          #########################################
+          # GitHub Pages Deploy Workflow (pages.yml)
+          #########################################
+          cat > .github/workflows/pages.yml <<'EOF'
+          name: Deploy to GitHub Pages
+          on:
+            push:
+              branches: [ main ]
+          permissions:
+            contents: read
+            pages: write
+            id-token: write
+          jobs:
+            deploy:
+              environment:
+                name: github-pages
+                url: ${{ steps.deployment.outputs.page_url }}
+              runs-on: ubuntu-latest
+              steps:
+                - uses: actions/checkout@v4
+                - uses: actions/configure-pages@v5
+                - uses: actions/upload-pages-artifact@v3
+                  with:
+                    path: public
+                - id: deployment
+                  uses: actions/deploy-pages@v4
+          EOF
+
+      - name: Commit scaffold
+        uses: EndBug/add-and-commit@v9
+        with:
+          author_name: github-actions
+          author_email: 41898282+github-actions[bot]@users.noreply.github.com
+          message: "bootstrap: scaffold handball site"
