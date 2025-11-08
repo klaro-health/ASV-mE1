@@ -1,127 +1,16 @@
 <!doctype html>
-<html lang="de" data-theme="auto">
-<head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
-  <title>ASV Handball · Live</title>
-
-  <!-- SEO -->
-  <meta name="description" content="ASV Handball – Live Scores, Tabelle, Spielplan. Fair. Vollgas. ASV!">
-  <meta name="theme-color" content="#0B1020"/>
-  <meta property="og:title" content="ASV Handball · Live">
-  <meta property="og:description" content="Live Scores, Tabelle, Spielplan – PWA, Offline, Dark/Light.">
-  <meta property="og:image" content="./assets/og-banner.png">
-  <meta name="color-scheme" content="light dark">
-
-  <!-- PWA -->
-  <link rel="manifest" href="./manifest.webmanifest">
-  <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="./assets/icon.svg">
-
-  <!-- Styles -->
-  <link rel="preload" as="style" href="../src/styles.css"/>
-  <link rel="stylesheet" href="../src/styles.css" media="print" onload="this.media='all'">
-  <noscript><link rel="stylesheet" href="../src/styles.css"></noscript>
-
-  <!-- Critical tiny CSS for fast paint -->
-  <style>
-    html,body{height:100%} body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,Segoe UI,Roboto,Inter,Arial}
-    .wrap{max-width:1120px;margin:auto;padding:16px}
-    .sr-only{position:absolute;width:1px;height:1px;margin:-1px;clip:rect(0,0,0,0);overflow:hidden}
-  </style>
-</head>
-<body>
-<a class="sr-only" href="#content">Zum Inhalt springen</a>
-<div class="wrap">
-  <header class="app" aria-label="Seitenkopf">
-    <div class="brand">
-      <img src="./assets/icon.svg" alt="" class="logo" width="40" height="40" aria-hidden="true">
-      <div class="brand-lines">
-        <strong id="brand-title">ASV Handball</strong>
-        <span class="muted" id="brand-sub">Fair. Vollgas. ASV!</span>
-      </div>
-    </div>
-    <nav class="actions" aria-label="Aktionen">
-      <button id="btn-install" class="btn" hidden>Installieren</button>
-      <button id="btn-share" class="btn" aria-label="Seite teilen">Teilen</button>
-      <button id="btn-theme" class="btn" aria-pressed="false" aria-label="Theme wechseln">🌗</button>
-    </nav>
-  </header>
-
-  <main id="content" class="grid-3" aria-live="polite">
-    <!-- Hero -->
-    <section class="card hero">
-      <div class="hero-left">
-        <h1 id="hero-title">„Volle Halle. Volle Herzen.“</h1>
-        <p class="muted" id="hero-sub">
-          Live-Scores, Tabelle & Spielplan – mit einem Hauch Konfetti.
-        </p>
-        <div class="cta-row">
-          <a href="#schedule" class="btn primary">Zum Spielplan</a>
-          <button class="btn" id="btn-cheer">🎉 Jubel!</button>
-        </div>
-      </div>
-      <div class="hero-right">
-        <div class="badge">Form: <strong id="form-value">–</strong></div>
-        <div class="countdown" id="countdown">–</div>
-      </div>
-    </section>
-
-    <!-- Tabelle -->
-    <section class="card" id="table" aria-labelledby="table-h">
-      <div class="card-head">
-        <h2 id="table-h">Tabelle</h2>
-        <div class="filters">
-          <label class="badge"><input id="flt-top" type="checkbox" checked> Top-3</label>
-          <span class="badge">⏱ <time id="tbl-updated">–</time></span>
-        </div>
-      </div>
-      <div id="table-body"><div class="skeleton h-240"></div></div>
-      <div class="sparkline-wrap">
-        <svg id="form-spark" viewBox="0 0 100 30" role="img" aria-label="Formkurve letzte 5 Spiele"></svg>
-      </div>
-    </section>
-
-    <!-- Spielplan -->
-    <section class="card" id="schedule" aria-labelledby="schedule-h">
-      <div class="card-head">
-        <h2 id="schedule-h">Spielplan & Ergebnisse</h2>
-        <div class="filters">
-          <label class="badge"><input id="flt-only-asv" type="checkbox" checked> nur ASV</label>
-          <label class="badge"><input id="flt-upcoming" type="checkbox" checked> bevorstehend</label>
-        </div>
-      </div>
-      <div id="schedule-body"><div class="skeleton h-240"></div></div>
-      <details id="iframe-fallback" class="mt-10" hidden>
-        <summary>Fallback: Original-Ansicht (nuLiga)</summary>
-        <iframe id="iframe-el" title="nuLiga Fallback" loading="lazy"></iframe>
-      </details>
-    </section>
-
-    <!-- Team & Trainer -->
-    <section class="card" id="roster" aria-labelledby="roster-h">
-      <div class="card-head">
-        <h2 id="roster-h">Team & Trainer</h2>
-        <span class="badge">Humor inside 🤝</span>
-      </div>
-      <div id="roster-body"><div class="skeleton h-200"></div></div>
-    </section>
-
-    <!-- News -->
-    <section class="card" id="news" aria-labelledby="news-h">
-      <div class="card-head">
-        <h2 id="news-h">Schlagzeilen</h2>
-        <span class="muted">Quelle: handball-world (RSS, sofern freigegeben)</span>
-      </div>
-      <div id="news-body"><div class="skeleton h-160"></div></div>
-    </section>
-  </main>
-
-  <footer class="muted center">
-    <small>© <span id="year"></span> ASV Handball · PWA aktiv · <a href="./offline.html" class="muted">Offline testen</a></small>
-  </footer>
-</div>
-
-<script type="module" src="../src/app.js" defer></script>
-</body>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <meta name="theme-color" content="#050A16" />
+    <link rel="manifest" href="/ASV-mE1/manifest.webmanifest" />
+    <title>ASV Süchteln mE1 · Live</title>
+    <link rel="preconnect" href="https://srs-handball.de">
+    <link rel="dns-prefetch" href="https://srs-handball.de">
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/ASV-mE1/src/main.tsx"></script>
+  </body>
 </html>
