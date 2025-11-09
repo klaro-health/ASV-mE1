@@ -1,89 +1,70 @@
-// src/components/LiveTable.tsx
-import React, { useMemo, useState } from 'react'
+import React from 'react';
 
-export type TableLike = {
-  rows?: any[]
-  teams?: any[]
-  table?: any[]
-}
+export type TableRow = {
+  Platz?: number;
+  Team_Kurzname?: string;
+  Spiele?: number;
+  SpieleGewonnen?: number;
+  SpieleUnentschieden?: number;
+  SpieleVerloren?: number;
+  PlusTore?: number;
+  MinusTore?: number;
+  DiffTore?: number;
+  PlusPunkte?: number;
+  MinusPunkte?: number;
+  points?: number; // fallback
+};
 
-export default function LiveTable({ table, club }:{ table: TableLike, club?: string }) {
-  const [mode, setMode] = useState<'full'|'mini'>('full')
-  const rows = useMemo(() => (table?.rows || table?.teams || table?.table || []), [table])
-
-  if (!rows.length) return <div className="skel" style={{height:18}}/>
-
-  const thead =
-    mode === 'full'
-      ? (
-        <tr>
-          <th>Rang</th><th style={{textAlign:'left'}}>Mannschaft</th>
-          <th>Sp.</th><th>S</th><th>U</th><th>N</th>
-          <th>Tore</th><th>+/-</th><th>Punkte</th>
-        </tr>
-      )
-      : (
-        <tr>
-          <th>Rang</th><th style={{textAlign:'left'}}>Mannschaft</th><th>Punkte</th>
-        </tr>
-      )
-
+export default function LiveTable({ table }: { table?: { rows?: TableRow[] } | null }) {
+  const rows = table?.rows ?? [];
+  if (!rows.length) {
+    return <div role="status" aria-live="polite" className="muted">Keine Tabellendaten.</div>;
+  }
   return (
-    <>
-      <div className="toolbar">
-        <label htmlFor="viewMode" className="sr-only">Tabellenansicht</label>
-        <select
-          id="viewMode"
-          name="viewMode"
-          title="Tabellenansicht"
-          aria-label="Tabellenansicht"
-          className="btn"
-          value={mode}
-          onChange={e => setMode(e.target.value as any)}
-        >
-          <option value="full">Normal</option>
-          <option value="mini">Mini</option>
-        </select>
+    <div>
+      <div className="section-h">
+        <h2>Live-Tabelle</h2>
+        <span className="chip-neutral"> automatisch aus nuLiga</span>
       </div>
 
-      <div className="table">
-        <table>
-          <thead>{thead}</thead>
-          <tbody>
-            {rows.map((r:any, i:number) => {
-              const rank = r.Platz ?? r.rank ?? r.position ?? (i+1)
-              const team = r.Team_Kurzname ?? r.team ?? r.name ?? ''
-              const gp   = r.Spiele ?? r.played ?? r.matches ?? 0
-              const w    = r.SpieleGewonnen ?? r.wins ?? 0
-              const d    = r.SpieleUnentschieden ?? r.draws ?? 0
-              const l    = r.SpieleVerloren ?? r.losses ?? 0
-              const gf   = r.PlusTore ?? r.goalsFor ?? 0
-              const ga   = r.MinusTore ?? r.goalsAgainst ?? 0
-              const diffN = (r.DiffTore ?? r.goalDiff ?? (gf - ga)) as number
-              const diff  = (diffN >= 0 ? '+' : '') + diffN
-              const pts   = (r.PlusPunkte!=null && r.MinusPunkte!=null)
-                ? `${r.PlusPunkte}:${r.MinusPunkte}` : (r.points ?? '')
+      <table className="table" aria-label="Ligatabelle">
+        <thead>
+          <tr>
+            <th className="num">Rang</th>
+            <th> Mannschaft </th>
+            <th className="num">Sp.</th>
+            <th className="num">S</th>
+            <th className="num">U</th>
+            <th className="num">N</th>
+            <th className="num">Tore</th>
+            <th className="num">+ / −</th>
+            <th className="num">Punkte</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r, i) => {
+            const tore = `${r.PlusTore ?? 0}:${r.MinusTore ?? 0}`;
+            const diff = r.DiffTore ?? ((r.PlusTore ?? 0) - (r.MinusTore ?? 0));
+            const punkte = r.PlusPunkte != null && r.MinusPunkte != null
+              ? `${r.PlusPunkte}:${r.MinusPunkte}` : (r.points ?? 0);
 
-              const trClass =
-                `${i<3?'top3':''} ${(club && String(team).toLowerCase().includes(club.toLowerCase()))?'me':''}`
-
-              return mode==='full' ? (
-                <tr key={i} className={trClass}>
-                  <td>{rank}</td><td className="team"><span>{team}</span></td>
-                  <td>{gp}</td><td>{w}</td><td>{d}</td><td>{l}</td>
-                  <td>{gf}:{ga}</td>
-                  <td className={`diff ${diffN>=0?'pos':'neg'}`}>{diff}</td>
-                  <td>{pts}</td>
-                </tr>
-              ) : (
-                <tr key={i} className={trClass}>
-                  <td>{rank}</td><td className="team"><span>{team}</span></td><td>{pts}</td>
-                </tr>
-              )
-            })}
-          </tbody>
-        </table>
-      </div>
-    </>
-  )
+            const chipClass = diff > 0 ? 'chip-pos' : diff < 0 ? 'chip-neg' : 'chip-neutral';
+            return (
+              <tr key={i}>
+                <td className="num">{r.Platz ?? i+1}</td>
+                <td className="team">{r.Team_Kurzname ?? '—'}</td>
+                <td className="num">{r.Spiele ?? 0}</td>
+                <td className="num">{r.SpieleGewonnen ?? 0}</td>
+                <td className="num">{r.SpieleUnentschieden ?? 0}</td>
+                <td className="num">{r.SpieleVerloren ?? 0}</td>
+                <td className="num">{tore}</td>
+                <td className="num"><span className={chipClass}>{diff > 0 ? `+${diff}` : `${diff}`}</span></td>
+                <td className="num">{punkte}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
 }
