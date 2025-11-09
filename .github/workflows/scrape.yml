@@ -1,16 +1,23 @@
 name: Fetch nuLiga → snapshots
+
 on:
-  schedule: [ { cron: "*/15 * * * *" } ]   # alle 15 Min
+  schedule:
+    - cron: "*/15 * * * *"
   workflow_dispatch:
-permissions: { contents: write }
+
+permissions:
+  contents: write
+
 jobs:
   scrape:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 20 }
-      - run: node scripts/scrape-nuliga.mjs
+        with:
+          node-version: 20
+      - name: Run scraper
+        run: node scripts/scrape-nuliga.mjs
       - name: Commit snapshots if changed
         run: |
           git config user.name "github-actions[bot]"
@@ -19,4 +26,3 @@ jobs:
           git diff --cached --quiet && echo "No changes" && exit 0
           git commit -m "chore: update nuLiga snapshots"
           git push
-
