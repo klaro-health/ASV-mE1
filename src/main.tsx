@@ -1,12 +1,12 @@
 import React from 'react'
-import ReactDOM from 'react-dom/client'
+import { createRoot } from 'react-dom/client'
 import App from './App'
-import './styles/tokens.css'   //  ⟵ neu
-import './styles/table.css'     // ⟵ neu
+import './index.css'
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode><App /></React.StrictMode>
-  
-
-createRoot(document.getElementById('root')!).render(<App />) 
+const rootEl = document.getElementById('root') as HTMLElement
+createRoot(rootEl).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
 )
+
