@@ -1,62 +1,83 @@
-import React, { useMemo } from 'react'
-import { useNuTab } from './hooks/useNuTab'
-import NextMatchCard from './components/NextMatchCard'
-import LiveTable from './components/LiveTable'
-import LivePlan from './components/LivePlan'
-import TeamPanel from './components/TeamPanel'
+import React, { useMemo } from 'react';
+import Header from './components/Header';
+import LiveTable from './components/LiveTable';
+import LivePlan from './components/LivePlan';
+import { useNuTab } from './hooks/useNuTab';
+
+import './styles/agency.css';
+import './styles/table.css'; // falls schon vorhanden – harmless
 
 export default function App() {
-  const { table, plan, meta, status, reload } = useNuTab();
+  const { table, plan, refresh, nextMatch, selfCheck } = useNuTab();
 
-  const staleInfo = useMemo(() => {
-    if (!meta?.fetchedAt) return null;
-    const ageMin = Math.round((Date.now() - new Date(meta.fetchedAt).getTime())/60000);
-    return ageMin >= 45 ? `Cache/Fallback · ${ageMin} min alt` : null;
-  }, [meta]);
+  const nextLine = useMemo(() => {
+    if (!nextMatch) return '—';
+    const date = nextMatch.SpieldatumTag?.replace(/\./g, '-') ?? '';
+    const vs = `${nextMatch.HeimTeam_Name_kurz ?? ''} – ${nextMatch.GastTeam_Name_kurz ?? ''}`.replace(/\s–\s$/, '');
+    return `${date} · ${nextMatch.SpieldatumUhrzeit ?? ''} · ${vs}`;
+  }, [nextMatch]);
 
   return (
-    <div className="page">
-      <header className="card" style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-        <div>
-          <h1>„Vollgas. Fair. <span style={{color:'var(--asv-red)'}}>ASV.</span>“</h1>
-          <div style={{opacity:.8,fontSize:'.9rem'}}>
-            Self-Check: {status === 'ok' ? 'nuLiga ok' : 'nuLiga down'} {staleInfo ? `– ${staleInfo}` : ''}
+    <>
+      <Header onReload={refresh} />
+
+      <main className="container grid grid-2">
+        {/* Left: Next match + Tabelle */}
+        <section className="card">
+          <div className="section-title">
+            <h2>Nächstes Spiel</h2>
+            <span className="section-sub">
+              {selfCheck} · <span className="muted">{nextLine}</span>
+            </span>
           </div>
-        </div>
-        <div style={{display:'flex', gap:12, alignItems:'center'}}>
-          <button className="btn" onClick={reload}>Neu laden</button>
 
-          {/* A11y: Label + id/name */}
-          <div>
-            <label htmlFor="density" style={{display:'block',fontSize:'.75rem',opacity:.7}}>Darstellung</label>
-            <select id="density" name="density" className="btn" aria-label="Darstellung wählen" title="Darstellung wählen">
-              <option value="full">Normal</option>
-              <option value="mini">Mini</option>
-            </select>
+          <table className="table" aria-label="Next Match">
+            <thead>
+              <tr>
+                <th>Datum</th><th>Zeit</th><th>Halle</th><th className="num">Nr.</th>
+                <th>Begegnung</th><th className="num">Ergebnis</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{nextMatch?.SpieldatumTag ?? '—'}</td>
+                <td>{nextMatch?.SpieldatumUhrzeit ?? '—'}</td>
+                <td>{nextMatch?.Hallenname ?? nextMatch?.Halle_Kuerzel ?? '—'}</td>
+                <td className="num">{nextMatch?.Spielnummer ?? '—'}</td>
+                <td className="team">
+                  {nextMatch ? `${nextMatch.HeimTeam_Name_kurz ?? '—'} – ${nextMatch.GastTeam_Name_kurz ?? '—'}` : '—'}
+                </td>
+                <td className="num">
+                  {(nextMatch?.Tore_Heim != null && nextMatch?.Tore_Gast != null) ? `${nextMatch!.Tore_Heim}:${nextMatch!.Tore_Gast}` : '—'}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div className="hr"></div>
+          <LiveTable table={table} />
+        </section>
+
+        {/* Right: Team & Trainer + Plan */}
+        <aside className="card">
+          <div className="section-title">
+            <h2>Team & Trainer</h2>
+            <span className="section-sub">Positions-Chips & Jahrgänge</span>
           </div>
-        </div>
-      </header>
 
-      {/* WOW: Nächstes Spiel mit ICS & Maps */}
-      <NextMatchCard plan={plan ?? { rows: [] }} />
+          <div className="row">
+            <div className="card" style="padding:12px 14px; flex:1">
+              👨‍🏫 <strong>Trainer</strong><br/>Max M.<br/><span className="muted">0151 1234567 · trainer@asv.example</span>
+            </div>
+            <div className="card" style="padding:12px 14px; flex:1">
+              👩‍🏫 <strong>Co-Trainerin</strong><br/>Erika B.<br/><span className="muted">—</span>
+            </div>
+          </div>
 
-      <section className="card">
-        <h2>Team & Trainer</h2>
-        <TeamPanel />
-      </section>
-
-      <section className="card">
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-          <h2>Live-Tabelle</h2>
-          {/* kleine Dichte-Umschaltung optional */}
-        </div>
-        <LiveTable table={table}/>
-      </section>
-
-      <section className="card">
-        <h2>Spielplan</h2>
-        <LivePlan plan={plan}/>
-      </section>
-    </div>
-  )
+          <div className="hr"></div>
+          <LivePlan plan={plan} />
+        </aside>
+      </main>
+    </>
+  );
 }
