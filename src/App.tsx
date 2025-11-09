@@ -2,18 +2,20 @@ import React, { useMemo } from 'react';
 import Header from './components/Header';
 import LiveTable from './components/LiveTable';
 import LivePlan from './components/LivePlan';
+import LiveTickerBadge from './components/LiveTickerBadge';
+import NewsTeaser from './components/NewsTeaser';
+import Roster from './components/Roster';
 import { useNuTab } from './hooks/useNuTab';
 
 import './styles/agency.css';
-import './styles/table.css'; // falls schon vorhanden – harmless
 
 export default function App() {
   const { table, plan, refresh, nextMatch, selfCheck } = useNuTab();
 
   const nextLine = useMemo(() => {
     if (!nextMatch) return '—';
-    const date = nextMatch.SpieldatumTag?.replace(/\./g, '-') ?? '';
-    const vs = `${nextMatch.HeimTeam_Name_kurz ?? ''} – ${nextMatch.GastTeam_Name_kurz ?? ''}`.replace(/\s–\s$/, '');
+    const date = nextMatch.SpieldatumTag ?? '';
+    const vs = `${nextMatch.HeimTeam_Name_kurz ?? ''} – ${nextMatch.GastTeam_Name_kurz ?? ''}`.trim();
     return `${date} · ${nextMatch.SpieldatumUhrzeit ?? ''} · ${vs}`;
   }, [nextMatch]);
 
@@ -22,13 +24,25 @@ export default function App() {
       <Header onReload={refresh} />
 
       <main className="container grid grid-2">
-        {/* Left: Next match + Tabelle */}
         <section className="card">
           <div className="section-title">
             <h2>Nächstes Spiel</h2>
-            <span className="section-sub">
-              {selfCheck} · <span className="muted">{nextLine}</span>
-            </span>
+            <span className="section-sub">{selfCheck} · <span className="muted">{nextLine}</span></span>
+          </div>
+
+          <div className="row" style={{justifyContent:'space-between', alignItems:'center', marginBottom:10}}>
+            <LiveTickerBadge
+              dateISO={nextMatch?.SpieldatumTag}
+              time={nextMatch?.SpieldatumUhrzeit}
+              meetingId={nextMatch?.Spielnummer}
+            />
+            <div>
+              <label htmlFor="mode" className="kicker" style={{display:'block', marginBottom:6}}>Ansicht</label>
+              <select id="mode" name="mode" className="btn" aria-label="Ansicht wählen">
+                <option value="full">Normal</option>
+                <option value="mini">Mini</option>
+              </select>
+            </div>
           </div>
 
           <table className="table" aria-label="Next Match">
@@ -48,7 +62,7 @@ export default function App() {
                   {nextMatch ? `${nextMatch.HeimTeam_Name_kurz ?? '—'} – ${nextMatch.GastTeam_Name_kurz ?? '—'}` : '—'}
                 </td>
                 <td className="num">
-                  {(nextMatch?.Tore_Heim != null && nextMatch?.Tore_Gast != null) ? `${nextMatch!.Tore_Heim}:${nextMatch!.Tore_Gast}` : '—'}
+                  {(nextMatch?.Tore_Heim != null && nextMatch?.Tore_Gast != null) ? `${nextMatch.Tore_Heim}:${nextMatch.Tore_Gast}` : '—'}
                 </td>
               </tr>
             </tbody>
@@ -58,24 +72,13 @@ export default function App() {
           <LiveTable table={table} />
         </section>
 
-        {/* Right: Team & Trainer + Plan */}
-        <aside className="card">
-          <div className="section-title">
-            <h2>Team & Trainer</h2>
-            <span className="section-sub">Positions-Chips & Jahrgänge</span>
+        <aside>
+          <Roster />
+          <NewsTeaser />
+          <div className="card" style={{marginTop:12}}>
+            <div className="section-title"><h2>Spielplan</h2><span className="section-sub">Aktuell</span></div>
+            <LivePlan plan={plan} />
           </div>
-
-          <div className="row">
-            <div className="card" style="padding:12px 14px; flex:1">
-              👨‍🏫 <strong>Trainer</strong><br/>Max M.<br/><span className="muted">0151 1234567 · trainer@asv.example</span>
-            </div>
-            <div className="card" style="padding:12px 14px; flex:1">
-              👩‍🏫 <strong>Co-Trainerin</strong><br/>Erika B.<br/><span className="muted">—</span>
-            </div>
-          </div>
-
-          <div className="hr"></div>
-          <LivePlan plan={plan} />
         </aside>
       </main>
     </>
