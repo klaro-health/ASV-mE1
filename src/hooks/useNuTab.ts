@@ -1,58 +1,49 @@
 // src/hooks/useNuTab.ts
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
-type NuTabType = 'table'|'plan'
+type TableData = { rows: any[] }
+type PlanData  = { rows: any[] }
 
-const tryMirrors = async (cfg:any, type:NuTabType) => {
-  if (!cfg) throw new Error('cfg missing')
-  const encoded = encodeURIComponent(cfg.groupUrl)
-  for (const base of (cfg.mirrors || []) as string[]) {
-    try {
-      const url = `${base}?url=${encoded}&type=${type}`
-      const r = await fetch(url, { cache: 'no-store', mode: 'cors' })
-      if (!r.ok) throw new Error(String(r.status))
-      const j = await r.json()
-      if (j && Object.keys(j).length) return j
-    } catch {}
-  }
-  throw new Error('mirrors down')
-}
-
-const readSnap = async (name:string) => {
+async function getJSON<T>(url: string): Promise<T | null> {
   try {
-    const url = `${import.meta.env.BASE_URL}${name}`
     const r = await fetch(url, { cache: 'no-store' })
     if (!r.ok) return null
-    return await r.json()
+    return await r.json() as T
   } catch { return null }
 }
 
-export function useNuTab(cfg:any){
-  const [table,setTable]=useState<any>(null)
-  const [plan,setPlan]=useState<any>(null)
-  const [mirrorsOk,setOk]=useState<boolean|null>(null)
-  const [stamp,setStamp]=useState<string>('lädt …')
+export function useNuTab() {
+  const [table, setTable] = useState<TableData|null>(null)
+  const [plan,  setPlan]  = useState<PlanData|null>(null)
+  const [status, setStatus] = useState<'loading'|'ok'|'fallback'>('loading')
 
-  useEffect(()=>{ if(!cfg) return
-    const cacheKey=cfg.cacheKey || 'asv_me1_cache'
-    const readCache=(k:string)=>{ try{ const o=JSON.parse(localStorage.getItem(cacheKey)||'{}'); return o[k]||null }catch{return null} }
-    const writeCache=(k:string,v:any)=>{ try{ const o=JSON.parse(localStorage.getItem(cacheKey)||'{}'); o[k]=v; localStorage.setItem(cacheKey,JSON.stringify(o)) }catch{} }
-
-    const load = async ()=>{
-      setStamp(new Date().toLocaleTimeString('de-DE'))
-      try{
-        const [t,p] = await Promise.all([tryMirrors(cfg,'table'), tryMirrors(cfg,'plan')])
-        setTable(t); setPlan(p); setOk(true); writeCache('table',t); writeCache('plan',p)
-      }catch{
-        const t0=readCache('table'); const p0=readCache('plan')
-        if (t0||p0){ setTable(t0); setPlan(p0); setOk(false); return }
-        const [ts, ps] = await Promise.all([readSnap('snapshot.table.json'), readSnap('snapshot.plan.json')])
-        if (ts || ps){ setTable(ts); setPlan(ps); setOk(false); return }
-        setOk(false)
+  useEffect(() => {
+    (async () => {
+      // 1) Primär: Snapshots aus /public
+      const t = await getJSON<TableData>('snapshot.table.json')
+      const p = await getJSON<PlanData>('snapshot.plan.json')
+      if (t?.rows?.length || p?.rows?.length) {
+        setTable(t||{rows:[]}); setPlan(p||{rows:[]}); setStatus('ok'); return
       }
-    }
-    load()
-  },[cfg])
+      // 2) Fallback: statische Demo (falls nichts da)
+      const demoT = await getJSON<TableData>('demo.table.json')
+      const demoP = await getJSON<PlanData>('demo.plan.json')
+      setTable(demoT||{rows:[]}); setPlan(demoP||{rows:[]}); setStatus('fallback')
+    })()
+  }, [])
 
-  return { table, plan, mirrorsOk, stamp }
+  const nextGame = useMemo(() => {
+    const rows = plan?.rows ?? []
+    const upcoming = rows
+      .filter((g:any)=>!g.Tore_Heim && !g.Tore_Gast)
+      .map((g:any)=> {
+        const ts = Date.parse(`${g.SpieldatumTag}T${(g.SpieldatumUhrzeit||'00:00')}:00`)
+        return { ...g, ts }
+      })
+      .filter(g=>!isNaN(g.ts))
+      .sort((a,b)=>a.ts - b.ts)[0]
+    return upcoming || null
+  }, [plan])
+
+  return { table, plan, nextGame, status }
 }
