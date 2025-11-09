@@ -2,27 +2,17 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// WICHTIG: base = Unterordner deiner GitHub-Pages-URL.
-// Repo heißt "ASV-mE1" -> URL ist https://klaro-health.github.io/ASV-mE1/
-// => base MUSS '/ASV-mE1/' sein (mit führendem und abschließendem Slash).
 export default defineConfig({
-  base: '/ASV-mE1/',
-
+  base: '/ASV-mE1/',        // wichtig: Repo-Name mit Slashes
   plugins: [react()],
-
-  // Optional, aber hilfreich:
   build: {
-    outDir: 'dist',          // Output-Ordner (wird vom Pages-Workflow deployed)
-    assetsDir: 'assets',     // JS/CSS/Images landen hier
-    sourcemap: false,        // true nur zum Debuggen
-    target: 'es2019'         // kompatible JS-Zielversion
+    outDir: 'dist',
+    assetsDir: 'assets',
+    sourcemap: false,
+    target: 'es2019'
   },
-
-  // Optional: sauberere Pfade im Dev-Server (lokal)
-  server: {
-    port: 5173,
-    open: false
-  }
+  server: { port: 5173, open: false }
 })
+
 
 
