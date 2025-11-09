@@ -1,14 +1,32 @@
+// src/components/LiveTable.tsx
 import React, { useMemo, useState } from 'react'
 
-export default function LiveTable({ table, club }:{table:any, club?:string}) {
-  const [mode,setMode]=useState<'full'|'mini'>('full')
-  const rows = useMemo(()=> (table?.rows || table?.teams || table?.table || []), [table])
+export type TableLike = {
+  rows?: any[]
+  teams?: any[]
+  table?: any[]
+}
+
+export default function LiveTable({ table, club }:{ table: TableLike, club?: string }) {
+  const [mode, setMode] = useState<'full'|'mini'>('full')
+  const rows = useMemo(() => (table?.rows || table?.teams || table?.table || []), [table])
 
   if (!rows.length) return <div className="skel" style={{height:18}}/>
 
-  const header = mode==='full'
-    ? <tr><th>Rang</th><th style={{textAlign:'left'}}>Mannschaft</th><th>Sp.</th><th>S</th><th>U</th><th>N</th><th>Tore</th><th>+/-</th><th>Punkte</th></tr>
-    : <tr><th>Rang</th><th style={{textAlign:'left'}}>Mannschaft</th><th>Punkte</th></tr>
+  const thead =
+    mode === 'full'
+      ? (
+        <tr>
+          <th>Rang</th><th style={{textAlign:'left'}}>Mannschaft</th>
+          <th>Sp.</th><th>S</th><th>U</th><th>N</th>
+          <th>Tore</th><th>+/-</th><th>Punkte</th>
+        </tr>
+      )
+      : (
+        <tr>
+          <th>Rang</th><th style={{textAlign:'left'}}>Mannschaft</th><th>Punkte</th>
+        </tr>
+      )
 
   return (
     <>
@@ -20,18 +38,19 @@ export default function LiveTable({ table, club }:{table:any, club?:string}) {
           title="Tabellenansicht"
           aria-label="Tabellenansicht"
           className="btn"
-          onChange={e=>setMode(e.target.value as any)}
           value={mode}
+          onChange={e => setMode(e.target.value as any)}
         >
           <option value="full">Normal</option>
           <option value="mini">Mini</option>
         </select>
       </div>
+
       <div className="table">
         <table>
-          <thead>{header}</thead>
+          <thead>{thead}</thead>
           <tbody>
-            {rows.map((r:any, i:number)=>{
+            {rows.map((r:any, i:number) => {
               const rank = r.Platz ?? r.rank ?? r.position ?? (i+1)
               const team = r.Team_Kurzname ?? r.team ?? r.name ?? ''
               const gp   = r.Spiele ?? r.played ?? r.matches ?? 0
@@ -40,10 +59,13 @@ export default function LiveTable({ table, club }:{table:any, club?:string}) {
               const l    = r.SpieleVerloren ?? r.losses ?? 0
               const gf   = r.PlusTore ?? r.goalsFor ?? 0
               const ga   = r.MinusTore ?? r.goalsAgainst ?? 0
-              const diffN= (r.DiffTore ?? r.goalDiff ?? (gf-ga)) as number
-              const diff = (diffN>=0?'+':'')+diffN
-              const pts  = (r.PlusPunkte!=null && r.MinusPunkte!=null) ? `${r.PlusPunkte}:${r.MinusPunkte}` : (r.points ?? '')
-              const trClass = `${i<3?'top3':''} ${(club && String(team).toLowerCase().includes(club.toLowerCase()))?'me':''}`
+              const diffN = (r.DiffTore ?? r.goalDiff ?? (gf - ga)) as number
+              const diff  = (diffN >= 0 ? '+' : '') + diffN
+              const pts   = (r.PlusPunkte!=null && r.MinusPunkte!=null)
+                ? `${r.PlusPunkte}:${r.MinusPunkte}` : (r.points ?? '')
+
+              const trClass =
+                `${i<3?'top3':''} ${(club && String(team).toLowerCase().includes(club.toLowerCase()))?'me':''}`
 
               return mode==='full' ? (
                 <tr key={i} className={trClass}>
@@ -65,4 +87,3 @@ export default function LiveTable({ table, club }:{table:any, club?:string}) {
     </>
   )
 }
-
