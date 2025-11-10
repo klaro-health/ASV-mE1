@@ -1,32 +1,35 @@
-Run npm run build
+// src/components/NewsTeaser.tsx
+import React, { useEffect, useState } from 'react'
 
-> build
-> vite build
+type Item = { title: string; link: string; pubDate?: string }
+type Props = { items?: Item[]; max?: number; headline?: string }
 
-The CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.
-vite v5.4.21 building for production...
-transforming...
-✓ 39 modules transformed.
-x Build failed in 408ms
-error during build:
-src/App.tsx (6:7): "default" is not exported by "src/components/NewsTeaser.tsx", imported by "src/App.tsx".
-file: /home/runner/work/ASV-mE1/ASV-mE1/src/App.tsx:6:7
+export default function NewsTeaser({ items, max = 3, headline = 'Schlagzeilen' }: Props) {
+  const [news, setNews] = useState<Item[]>(items || [])
 
-4: import LivePlan from './components/LivePlan';
-5: import LiveTickerBadge from './components/LiveTickerBadge';
-6: import NewsTeaser from './components/NewsTeaser';
-          ^
-7: import Roster from './components/Roster';
-8: import { useNuTab } from './hooks/useNuTab';
+  // Fallback: lokale Datei news.json (liegt in public/)
+  useEffect(() => {
+    if (news.length) return
+    fetch(`${import.meta.env.BASE_URL}news.json`)
+      .then(r => (r.ok ? r.json() : []))
+      .then((j: Item[]) => Array.isArray(j) ? setNews(j.slice(0, max)) : undefined)
+      .catch(() => {})
+  }, [news.length, max])
 
-    at getRollupError (file:///home/runner/work/ASV-mE1/ASV-mE1/node_modules/rollup/dist/es/shared/parseAst.js:401:41)
-    at error (file:///home/runner/work/ASV-mE1/ASV-mE1/node_modules/rollup/dist/es/shared/parseAst.js:397:42)
-    at Module.error (file:///home/runner/work/ASV-mE1/ASV-mE1/node_modules/rollup/dist/es/shared/node-entry.js:16946:16)
-    at Module.traceVariable (file:///home/runner/work/ASV-mE1/ASV-mE1/node_modules/rollup/dist/es/shared/node-entry.js:17400:29)
-    at ModuleScope.findVariable (file:///home/runner/work/ASV-mE1/ASV-mE1/node_modules/rollup/dist/es/shared/node-entry.js:15067:39)
-    at FunctionScope.findVariable (file:///home/runner/work/ASV-mE1/ASV-mE1/node_modules/rollup/dist/es/shared/node-entry.js:5641:38)
-    at FunctionBodyScope.findVariable (file:///home/runner/work/ASV-mE1/ASV-mE1/node_modules/rollup/dist/es/shared/node-entry.js:5641:38)
-    at Identifier.bind (file:///home/runner/work/ASV-mE1/ASV-mE1/node_modules/rollup/dist/es/shared/node-entry.js:5415:40)
-    at CallExpression.bind (file:///home/runner/work/ASV-mE1/ASV-mE1/node_modules/rollup/dist/es/shared/node-entry.js:2802:28)
-    at CallExpression.bind (file:///home/runner/work/ASV-mE1/ASV-mE1/node_modules/rollup/dist/es/shared/node-entry.js:12114:15)
-Error: Process completed with exit code 1.
+  if (!news.length) return null
+
+  return (
+    <section className="card" aria-labelledby="news-headline" style={{ padding: 16 }}>
+      <h2 id="news-headline" style={{ marginTop: 0 }}>{headline}</h2>
+      <ul style={{ margin: 0, paddingLeft: 18 }}>
+        {news.slice(0, max).map((n, i) => (
+          <li key={i} style={{ marginBottom: 6 }}>
+            <a href={n.link} target="_blank" rel="noreferrer">{n.title}</a>
+            {n.pubDate && <span style={{ opacity: .6, marginLeft: 8 }}>· {n.pubDate}</span>}
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
