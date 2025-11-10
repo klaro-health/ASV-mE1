@@ -1,27 +1,48 @@
-import React from 'react';
+// src/components/Header.tsx
+import React from 'react'
 
-export default function Header({ onReload }: { onReload?: () => void }) {
-  return (
-    <header className="container" style={{paddingTop:16}}>
-      <div className="row" style={{justifyContent:'space-between', alignItems:'center'}}>
-        <div className="row" style={{alignItems:'center'}}>
-          <img src="/ASV-mE1/logo.svg" alt="ASV Logo" width="36" height="36" style={{borderRadius:8, boxShadow:'0 6px 16px rgba(0,0,0,.35)'}}/>
-          <div style={{marginLeft:10}}>
-            <div className="badge" aria-label="Live Status">
-              <span style={{width:8,height:8,background:'#22c55e',borderRadius:999}}></span>
-              ASV Süchteln · mE1 · Live
-            </div>
-            <h1 className="h1">„Vollgas. Fair. <span style={{color:'var(--brandB)'}}>ASV</span>.“</h1>
-            <div className="kicker">
-              Self-Check: nuTab <strong>down</strong> — Cache/Fallback · Nächstes Spiel wird automatisch im 15-Min-Takt aktualisiert.
-            </div>
-          </div>
-        </div>
-        <div className="row">
-          <a className="btn" href="https://hnr-handball.liga.nu/cgi-bin/WebObjects/nuLigaHBDE.woa/wa/groupPage?championship=KG+25%2F26&group=424318" target="_blank" rel="noreferrer">nuLiga</a>
-          <button className="btn" onClick={onReload}>Neu laden</button>
-        </div>
-      </div>
-    </header>
-  );
+type Props = {
+  title?: string
+  subtitle?: string
+  children?: React.ReactNode
 }
+
+export default function Header({ title = "ASV Süchteln · mE1", subtitle = "Regionsoberliga · Saison 2025/26", children }: Props) {
+  return (
+    <header
+      className="card"
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 16,
+        padding: 16,
+        borderRadius: 16
+      }}
+    >
+      <img
+        src="/ASV-mE1/public/icon-192.png"
+        alt="ASV mE1"
+        width={48}
+        height={48}
+        style={{ borderRadius: 12 }}
+        onError={(e)=>{ (e.currentTarget as HTMLImageElement).style.display='none' }}
+      />
+      <div style={{ flex: 1 }}>
+        <h1 style={{ margin: 0, fontSize: 22, lineHeight: 1.2 }}>{title}</h1>
+        <div style={{ opacity: .75, marginTop: 4 }}>{subtitle}</div>
+      </div>
+
+      {/* A11y: beschriftetes Select statt „namenlos“ */}
+      <div>
+        <label htmlFor="viewMode">Ansicht</label>
+        <select id="viewMode" name="viewMode" className="btn" aria-label="Ansicht wählen">
+          <option value="full">Normal</option>
+          <option value="mini">Mini</option>
+        </select>
+      </div>
+
+      {children}
+    </header>
+  )
+}
+
